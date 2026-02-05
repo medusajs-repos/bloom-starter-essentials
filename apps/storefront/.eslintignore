@@ -1,0 +1,13 @@
+# Build and generated files
+dist/
+node_modules/
+.netlify/
+.nitro/
+.vercel/
+static-routes.json
+
+# Build scripts (may have different linting requirements)
+scripts/
+
+# config
+vite.config.ts
