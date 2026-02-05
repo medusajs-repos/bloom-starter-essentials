@@ -1,5 +1,5 @@
-import { HttpTypes } from "@medusajs/types";
-import { clsx } from "clsx";
+import { HttpTypes } from "@medusajs/types"
+import { clsx } from "clsx"
 
 type AddressProps = {
   address:
@@ -21,7 +21,7 @@ const Address = ({ address, className }: AddressProps) => {
       <br />
       {address.country_code?.toUpperCase()}
     </p>
-  );
-};
+  )
+}
 
-export default Address;
+export default Address

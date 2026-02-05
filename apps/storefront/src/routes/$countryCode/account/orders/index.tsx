@@ -1,17 +1,18 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCustomer } from "@/lib/hooks/use-customer";
-import { useCustomerOrders } from "@/lib/hooks/use-customer-orders";
-import { formatPrice } from "@/lib/utils/price";
-import { Auth } from "@/pages/auth";
+import { createFileRoute, Link } from "@tanstack/react-router"
+import { useCustomer } from "@/lib/hooks/use-customer"
+import { useCustomerOrders } from "@/lib/hooks/use-customer-orders"
+import { formatPrice } from "@/lib/utils/price"
+import { Auth } from "@/pages/auth"
+import { HttpTypes } from "@medusajs/types"
 
 export const Route = createFileRoute("/$countryCode/account/orders/")({
   component: OrdersPage,
-});
+})
 
 function OrdersPage() {
-  const { data: customer, isLoading: customerLoading } = useCustomer();
-  const { countryCode } = Route.useParams();
-  const { data: orders, isLoading: ordersLoading } = useCustomerOrders();
+  const { data: customer, isLoading: customerLoading } = useCustomer()
+  const { countryCode } = Route.useParams()
+  const { data: orders, isLoading: ordersLoading } = useCustomerOrders()
 
   if (customerLoading) {
     return (
@@ -20,11 +21,11 @@ function OrdersPage() {
           <p>Loading...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!customer) {
-    return <Auth />;
+    return <Auth />
   }
 
   const formatDate = (date: string) => {
@@ -32,8 +33,8 @@ function OrdersPage() {
       year: "numeric",
       month: "short",
       day: "numeric",
-    });
-  };
+    })
+  }
 
   return (
     <div className="container mx-auto px-4 py-12 pt-40">
@@ -54,7 +55,7 @@ function OrdersPage() {
             <p>Loading orders...</p>
           ) : orders && orders.length > 0 ? (
             <div className="space-y-4">
-              {orders.map((order: any) => (
+              {orders.map((order: HttpTypes.StoreOrder) => (
                 <Link
                   key={order.id}
                   to="/$countryCode/account/orders/$orderId"
@@ -90,5 +91,5 @@ function OrdersPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

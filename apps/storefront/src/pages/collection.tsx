@@ -4,6 +4,18 @@ import { FilterBar } from "@/components/filters/filter-bar"
 import { useProducts } from "@/lib/hooks/use-products"
 import { useState, useMemo } from "react"
 import { useLoaderData } from "@tanstack/react-router"
+import { HttpTypes } from "@medusajs/types"
+
+interface CollectionProps {
+  collection: HttpTypes.StoreCollection
+  region: HttpTypes.StoreRegion
+}
+
+interface VariantItem {
+  product: HttpTypes.StoreProduct
+  variant: HttpTypes.StoreProductVariant
+  color: string
+}
 
 /**
  * Collection Page with Filtering & Sorting
@@ -14,7 +26,7 @@ import { useLoaderData } from "@tanstack/react-router"
  * - Sort options
  * - Infinite scroll pagination
  */
-export const Collection = ({ collection, region }: any) => {
+export const Collection = ({ collection, region }: CollectionProps) => {
   const loaderData = useLoaderData({ from: "/$countryCode/collections/$handle" })
   const { bestSellingIds = [] } = loaderData || {}
   
@@ -34,23 +46,22 @@ export const Collection = ({ collection, region }: any) => {
     },
   })
 
-  const products = data?.pages.flatMap((page) => page.products) || []
-
   // Transform products into variant-level items for display (one per color variant)
-  const variantItems = useMemo(() => {
-    return products.flatMap((product) => {
+  const variantItems = useMemo((): VariantItem[] => {
+    const rawProducts = data?.pages.flatMap((page) => page.products) || []
+    return rawProducts.flatMap((product) => {
       if (!product.variants?.length) return []
-      
+
       // Group variants by color
-      const colorMap = new Map()
-      
-      product.variants.forEach((variant: any) => {
+      const colorMap = new Map<string, VariantItem>()
+
+      product.variants.forEach((variant) => {
         // Find color option in variant
         const colorOption = variant.options?.find(
-          (opt: any) => opt.option?.title?.toLowerCase() === "color"
+          (opt) => opt.option?.title?.toLowerCase() === "color"
         )
         const colorValue = colorOption?.value?.toLowerCase() || "default"
-        
+
         // Keep only first variant per color
         if (!colorMap.has(colorValue)) {
           colorMap.set(colorValue, {
@@ -60,10 +71,10 @@ export const Collection = ({ collection, region }: any) => {
           })
         }
       })
-      
+
       return Array.from(colorMap.values())
     })
-  }, [products])
+  }, [data])
 
   // Filter groups
   const filterGroups = [
@@ -121,15 +132,6 @@ export const Collection = ({ collection, region }: any) => {
     })
   }
 
-  // Get cheapest price for a product
-  const getCheapestPrice = (product: any): number => {
-    if (!product?.variants?.length) return Infinity
-    const prices = product.variants
-      .map((v: any) => v.calculated_price?.calculated_amount)
-      .filter((price: any) => price !== undefined)
-    return prices.length > 0 ? Math.min(...prices) : Infinity
-  }
-
   // Apply filtering and sorting
   const filteredAndSortedItems = useMemo(() => {
     let result = [...variantItems]
@@ -139,7 +141,7 @@ export const Collection = ({ collection, region }: any) => {
       result = result.filter((item) => {
         // Check all variants of the product for stock availability
         // Products with manage_inventory true are considered in stock
-        const hasAnyStock = item.product?.variants?.some((variant: any) => {
+        const hasAnyStock = item.product?.variants?.some((variant) => {
           // If inventory management is disabled, always in stock
           if (variant?.manage_inventory === false || variant?.allow_backorder === true) {
             return true
@@ -232,15 +234,6 @@ export const Collection = ({ collection, region }: any) => {
 
     return result
   }, [variantItems, selectedFilters, sortBy, bestSellingIds])
-
-  // Collection hero images
-  const collectionImages: Record<string, string> = {
-    "studio-training": "https://cdn.mignite.app/ws/works_01KGFKTHDC6ZD3WS7GQTX8992N/generated-01KGM9B072HSKQ1KH31VECQ1R3-01KGM9B072W18BYM7EQ8M3HG9D.jpeg",
-    "outer-layers": "https://cdn.mignite.app/ws/works_01KGFKTHDC6ZD3WS7GQTX8992N/generated-01KGM9B3MRRQ12A628T67KRZPD-01KGM9B3MRCC9A4ZDGCCMZP80J.jpeg",
-    "core-essentials": "https://cdn.mignite.app/ws/works_01KGFKTHDC6ZD3WS7GQTX8992N/generated-01KGM9B6BWN4A68ZY2X56P8B9H-01KGM9B6BWBBSKGERH10CBZX03.jpeg",
-  }
-
-  const heroImage = collectionImages[collection?.handle] || collectionImages["core-essentials"]
 
   return (
     <>

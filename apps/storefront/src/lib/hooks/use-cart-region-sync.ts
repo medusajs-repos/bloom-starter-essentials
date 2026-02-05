@@ -38,11 +38,7 @@ export const useCartRegionSync = (countryCode: string) => {
       updateCartMutation.mutate(
         { region_id: targetRegion.id },
         {
-          onError: (error) => {
-            console.error("Failed to update cart region:", error)
-            isUpdatingRef.current = false
-          },
-          onSuccess: () => {
+          onSettled: () => {
             isUpdatingRef.current = false
           },
         }

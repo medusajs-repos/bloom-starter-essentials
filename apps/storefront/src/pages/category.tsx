@@ -5,6 +5,13 @@ import { useProducts } from "@/lib/hooks/use-products"
 import { useLoaderData } from "@tanstack/react-router"
 import { useState, useMemo } from "react"
 import { getPriceFilterOptions } from "@/lib/utils/price"
+import { HttpTypes } from "@medusajs/types"
+
+interface VariantItem {
+  product: HttpTypes.StoreProduct
+  variant: HttpTypes.StoreProductVariant
+  color: string | null
+}
 
 /**
  * Category Page with Filtering & Sorting
@@ -31,7 +38,7 @@ const Category = () => {
   // Build category IDs array - include category itself and all children
   const categoryIds = category?.id ? [
     category.id,
-    ...(category.category_children?.map((child: any) => child.id) || [])
+    ...(category.category_children?.map((child: HttpTypes.StoreProductCategory) => child.id) || [])
   ] : undefined
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } = useProducts({
@@ -43,46 +50,45 @@ const Category = () => {
     },
   })
 
-  const products = data?.pages.flatMap((page) => page.products) || []
-
   // Transform products to display format (one per color variant)
   const variantItems = useMemo(() => {
-    const items: Array<{ product: any; variant: any; color: string | null }> = []
-    
-    products.forEach((product) => {
+    const rawProducts = data?.pages.flatMap((page) => page.products) || []
+    const items: VariantItem[] = []
+
+    rawProducts.forEach((product) => {
       // Get all unique colors from variants
-      const colorMap = new Map<string, any>()
-      
-      product.variants?.forEach((variant: any) => {
+      const colorMap = new Map<string, { variant: HttpTypes.StoreProductVariant; color: string }>()
+
+      product.variants?.forEach((variant) => {
         const colorOption = variant.options?.find(
-          (opt: any) => opt.option?.title?.toLowerCase() === "color"
+          (opt) => opt.option?.title?.toLowerCase() === "color"
         )
         let color = colorOption?.value || null
-        
+
         // Normalize beige to sand
         if (color?.toLowerCase() === "beige") {
           color = "Sand"
         }
-        
+
         // Store the first variant of each color
         if (color && !colorMap.has(color.toLowerCase())) {
           colorMap.set(color.toLowerCase(), { variant, color })
         }
       })
-      
+
       // Create an item for each color variant
       if (colorMap.size > 0) {
         colorMap.forEach(({ variant, color }) => {
           items.push({ product, variant, color })
         })
-      } else {
+      } else if (product.variants?.[0]) {
         // Fallback if no colors found
-        items.push({ product, variant: product.variants?.[0], color: null })
+        items.push({ product, variant: product.variants[0], color: null })
       }
     })
-    
+
     return items
-  }, [products])
+  }, [data])
 
   // Generate price options based on region currency
   const priceOptions = useMemo(
@@ -92,24 +98,25 @@ const Category = () => {
 
   // Dynamically generate color options from products
   const colorOptions = useMemo(() => {
+    const rawProducts = data?.pages.flatMap((page) => page.products) || []
     const colors = new Set<string>()
-    
-    products.forEach((product) => {
-      product.variants?.forEach((variant: any) => {
+
+    rawProducts.forEach((product) => {
+      product.variants?.forEach((variant) => {
         const colorOption = variant.options?.find(
-          (opt: any) => opt.option?.title === "Color"
+          (opt) => opt.option?.title === "Color"
         )
         if (colorOption?.value) {
           colors.add(colorOption.value.toLowerCase())
         }
       })
     })
-    
+
     return Array.from(colors).sort().map((color) => ({
       id: color,
       label: color.charAt(0).toUpperCase() + color.slice(1),
     }))
-  }, [products])
+  }, [data])
 
   // Filter groups
   const filterGroups = [
@@ -156,15 +163,6 @@ const Category = () => {
     })
   }
 
-  // Get cheapest price for a product
-  const getCheapestPrice = (product: any): number => {
-    if (!product?.variants?.length) return Infinity
-    const prices = product.variants
-      .map((v: any) => v.calculated_price?.calculated_amount)
-      .filter((price: any) => price !== undefined)
-    return prices.length > 0 ? Math.min(...prices) : Infinity
-  }
-
   // Apply filtering and sorting
   const filteredAndSortedItems = useMemo(() => {
     let result = [...variantItems]
@@ -175,7 +173,7 @@ const Category = () => {
         // Check all variants of the product for stock availability
         // Products with manage_inventory true are considered in stock
         // (We'd need inventory_level data for precise stock counts)
-        const hasAnyStock = item.product?.variants?.some((variant: any) => {
+        const hasAnyStock = item.product?.variants?.some((variant) => {
           // If inventory management is disabled, always in stock
           if (variant?.manage_inventory === false || variant?.allow_backorder === true) {
             return true
@@ -211,8 +209,9 @@ const Category = () => {
     if (selectedFilters.color?.length > 0) {
       result = result.filter((item) => {
         // Color was extracted during variantItems creation
-        return item.color && selectedFilters.color.some((filterColor: string) => {
-          const itemColor = item.color.toLowerCase()
+        if (!item.color) return false
+        const itemColor = item.color.toLowerCase()
+        return selectedFilters.color.some((filterColor) => {
           const filter = filterColor.toLowerCase()
           // Match exact or partial (e.g., "muted olive" matches "olive")
           return itemColor === filter || itemColor.includes(filter) || filter.includes(itemColor)

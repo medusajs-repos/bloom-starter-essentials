@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef } from "react"
 
 interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -37,10 +37,10 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>(
           </label>
         )}
       </div>
-    );
+    )
   }
-);
+)
 
-Radio.displayName = "Radio";
+Radio.displayName = "Radio"
 
-export default Radio;
+export default Radio

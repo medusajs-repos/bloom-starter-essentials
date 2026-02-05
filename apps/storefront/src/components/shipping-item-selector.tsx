@@ -20,26 +20,26 @@ const ShippingItemSelector = ({
 }: ShippingItemSelectorProps) => {
   const [calculatedPrice, setCalculatedPrice] = useState<number | undefined>(
     undefined
-  );
+  )
   const isDisabled =
     shippingOption.price_type === "calculated" &&
-    typeof calculatedPrice !== "number";
+    typeof calculatedPrice !== "number"
   const price =
     shippingOption.price_type === "calculated"
       ? calculatedPrice
-      : shippingOption.amount;
+      : shippingOption.amount
 
   useEffect(() => {
     if (shippingOption.price_type !== "calculated") {
-      return;
+      return
     }
 
     calculatePriceForShippingOption({
       option_id: shippingOption.id,
     }).then((option) => {
-      setCalculatedPrice(option.amount);
-    });
-  }, [shippingOption.price_type]);
+      setCalculatedPrice(option.amount)
+    })
+  }, [shippingOption.price_type, shippingOption.id])
 
   return (
     <label
@@ -88,7 +88,7 @@ const ShippingItemSelector = ({
         </div>
       </div>
     </label>
-  );
-};
+  )
+}
 
-export default ShippingItemSelector;
+export default ShippingItemSelector

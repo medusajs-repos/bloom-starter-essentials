@@ -1,7 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router"
 import { useState } from "react"
 import { useAddToCart } from "@/lib/hooks/use-cart"
-import { useCartDrawer } from "@/lib/context/cart"
+import { useCartDrawer } from "@/lib/hooks/use-cart-drawer"
 import { DEFAULT_CART_DROPDOWN_FIELDS } from "@/components/cart"
 import { getCountryCodeFromPath } from "@/lib/utils/region"
 
@@ -23,7 +23,7 @@ interface ProductGridProps {
   title: string
   description?: string
   products: Product[]
-  baseHref: string
+  countryCode: string
   showQuickBuy?: boolean
 }
 
@@ -31,7 +31,7 @@ export const ProductGrid = ({
   title,
   description,
   products,
-  baseHref,
+  countryCode,
   showQuickBuy = false,
 }: ProductGridProps) => {
   return (
@@ -51,7 +51,7 @@ export const ProductGrid = ({
             <ProductCard
               key={product.id}
               product={product}
-              baseHref={baseHref}
+              countryCode={countryCode}
               showQuickBuy={showQuickBuy}
             />
           ))}
@@ -63,16 +63,16 @@ export const ProductGrid = ({
 
 const ProductCard = ({
   product,
-  baseHref,
+  countryCode,
   showQuickBuy,
 }: {
   product: Product
-  baseHref: string
+  countryCode: string
   showQuickBuy: boolean
 }) => {
   const [isHovered, setIsHovered] = useState(false)
   const location = useLocation()
-  const countryCode = getCountryCodeFromPath(location.pathname) || "dk"
+  const currentCountryCode = getCountryCodeFromPath(location.pathname) || countryCode || "us"
   const addToCartMutation = useAddToCart({
     fields: DEFAULT_CART_DROPDOWN_FIELDS,
   })
@@ -89,7 +89,7 @@ const ProductCard = ({
   const handleQuickAdd = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     const firstVariant = product.variants?.[0]
     if (!firstVariant?.id) return
 
@@ -97,7 +97,7 @@ const ProductCard = ({
       {
         variant_id: firstVariant.id,
         quantity: 1,
-        country_code: countryCode,
+        country_code: currentCountryCode,
       },
       {
         onSuccess: () => {
@@ -114,7 +114,8 @@ const ProductCard = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       <Link
-        to={`${baseHref}/products/${product.handle}`}
+        to="/$countryCode/products/$handle"
+        params={{ countryCode: currentCountryCode, handle: product.handle || "" }}
         className="block relative"
       >
         <div className="aspect-[3/4] bg-sand-50 mb-4 overflow-hidden relative">
@@ -129,10 +130,10 @@ const ProductCard = ({
               <span className="text-neutral-300 text-xs">No Image</span>
             </div>
           )}
-          
+
           {showQuickBuy && isHovered && (
             <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
-              <button 
+              <button
                 onClick={handleQuickAdd}
                 disabled={addToCartMutation.isPending}
                 className="w-full bg-white text-neutral-900 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-neutral-100 transition-colors disabled:opacity-50"

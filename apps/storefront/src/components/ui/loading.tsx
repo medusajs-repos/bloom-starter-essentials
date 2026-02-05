@@ -1,4 +1,4 @@
-import { clsx } from "clsx";
+import { clsx } from "clsx"
 
 interface LoadingProps {
   /**
@@ -47,8 +47,8 @@ const Loading = ({
         </div>
       ))}
     </div>
-  );
-};
+  )
+}
 
 export { Loading }
 export default Loading

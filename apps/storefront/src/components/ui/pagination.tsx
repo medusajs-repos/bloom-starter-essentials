@@ -14,16 +14,16 @@ const Pagination = ({
   "data-testid": dataTestId,
 }: PaginationProps) => {
   const getPageNumbers = () => {
-    const pageNumbers = [];
-    const startPage = Math.max(1, page - 2);
-    const endPage = Math.min(totalPages, page + 2);
+    const pageNumbers = []
+    const startPage = Math.max(1, page - 2)
+    const endPage = Math.min(totalPages, page + 2)
 
     for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i);
+      pageNumbers.push(i)
     }
 
-    return pageNumbers;
-  };
+    return pageNumbers
+  }
 
   return (
     <div
@@ -91,7 +91,7 @@ const Pagination = ({
         Next
       </Button>
     </div>
-  );
-};
+  )
+}
 
-export default Pagination;
+export default Pagination

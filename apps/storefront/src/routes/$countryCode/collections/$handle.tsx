@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router"
-import { notFound } from "@tanstack/react-router"
+import { createFileRoute, notFound } from "@tanstack/react-router"
 import { Collection } from "@/pages/collection"
 import { getRegion } from "@/lib/data/regions"
 import { sdk } from "@/lib/utils/sdk"
@@ -50,7 +49,7 @@ export const Route = createFileRoute("/$countryCode/collections/$handle")({
       ],
     }
   },
-  component: () => {
+  component: function CollectionPage() {
     const { collection, region } = Route.useLoaderData()
     return <Collection collection={collection} region={region} />
   },

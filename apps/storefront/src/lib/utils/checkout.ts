@@ -23,9 +23,10 @@ export const getActivePaymentSession = (cart: HttpTypes.StoreCart): HttpTypes.St
 // ============ GIFT CARD CHECK ============
 
 export const isPaidWithGiftCard = (cartOrOrder: HttpTypes.StoreCart | HttpTypes.StoreOrder): boolean => {
-  return (cartOrOrder as any)?.gift_cards &&
-  (cartOrOrder as any)?.gift_cards?.length > 0 &&
-  cartOrOrder?.total === 0
+  const hasGiftCards = "gift_cards" in cartOrOrder &&
+    Array.isArray(cartOrOrder.gift_cards) &&
+    cartOrOrder.gift_cards.length > 0
+  return hasGiftCards && cartOrOrder?.total === 0
 }
 
 // ============ CALCULATE SHIPPING PRICE ============

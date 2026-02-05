@@ -1,4 +1,4 @@
-import { clsx } from "clsx";
+import { clsx } from "clsx"
 
 type ThumbnailProps = {
   thumbnail?: string | null;
@@ -26,5 +26,5 @@ export const Thumbnail = ({ thumbnail, alt, className }: ThumbnailProps) => {
         </div>
       )}
     </>
-  );
-};
+  )
+}

@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { HttpTypes } from "@medusajs/types"
 import { queryKeys } from "@/lib/utils/query-keys"
 import { sdk } from "@/lib/utils/sdk"
 import { getStoredCart, removeStoredCart } from "@/lib/utils/cart"
@@ -136,7 +135,7 @@ export const useInitiateCartPaymentSession = () => {
       data,
     }: {
       provider_id: string;
-      data?: Record<string, any>;
+      data?: Record<string, unknown>;
     }) => {
       const cartId = getStoredCart()
       if (!cartId) throw new Error("No cart found")

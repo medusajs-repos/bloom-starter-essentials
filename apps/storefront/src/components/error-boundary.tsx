@@ -15,15 +15,15 @@ interface State {
 export class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
-  };
+  }
 
   public static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+    return { hasError: true, error }
   }
 
   private reset = () => {
-    this.setState({ hasError: false, error: undefined });
-  };
+    this.setState({ hasError: false, error: undefined })
+  }
 
   public render() {
     if (this.state.hasError && this.state.error) {
@@ -32,19 +32,19 @@ export class ErrorBoundary extends Component<Props, State> {
         stack: this.state.error.stack,
         name: this.state.error.name,
         cause: this.state.error.cause,
-      };
-
-      terminal.error(structuredError);
-
-      if (this.props.fallback) {
-        return this.props.fallback;
       }
 
-      return <ErrorFallback error={this.state.error} reset={this.reset} />;
+      terminal.error(structuredError)
+
+      if (this.props.fallback) {
+        return this.props.fallback
+      }
+
+      return <ErrorFallback error={this.state.error} reset={this.reset} />
     }
 
-    return this.props.children;
+    return this.props.children
   }
 }
 
-export default ErrorBoundary;
+export default ErrorBoundary

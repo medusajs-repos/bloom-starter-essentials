@@ -30,7 +30,7 @@ export const Hero = ({
             muted
             playsInline
             className="w-full h-full object-cover"
-            style={{ objectPosition: 'center center' }}
+            style={{ objectPosition: "center center" }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

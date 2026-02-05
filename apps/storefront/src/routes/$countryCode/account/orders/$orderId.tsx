@@ -1,62 +1,62 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { sdk } from "@/lib/utils/sdk";
-import { formatPrice } from "@/lib/utils/price";
-import { ArrowLeft } from "@medusajs/icons";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router"
+import { sdk } from "@/lib/utils/sdk"
+import { formatPrice } from "@/lib/utils/price"
+import { ArrowLeft } from "@medusajs/icons"
+import { HttpTypes } from "@medusajs/types"
 
 export const Route = createFileRoute("/$countryCode/account/orders/$orderId")({
   component: OrderDetail,
   beforeLoad: async () => {
     try {
-      const { customer } = await sdk.store.customer.retrieve();
+      const { customer } = await sdk.store.customer.retrieve()
       if (!customer) {
         throw redirect({
           to: "/$countryCode/account",
           params: { countryCode: "de" },
-        });
+        })
       }
-    } catch (error) {
+    } catch {
       throw redirect({
         to: "/$countryCode/account",
         params: { countryCode: "de" },
-      });
+      })
     }
   },
   loader: async ({ params }) => {
     const { order } = await sdk.store.order.retrieve(params.orderId, {
       fields: "*items,*items.variant,*items.product,*shipping_address,*billing_address,*fulfillments",
-    });
-    return { order };
+    })
+    return { order }
   },
-});
+})
 
 function OrderDetail() {
-  const { order } = Route.useLoaderData();
-  const { countryCode } = Route.useParams();
+  const { order } = Route.useLoaderData()
+  const { countryCode } = Route.useParams()
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
-    });
-  };
+    })
+  }
 
   const getFulfillmentStatus = () => {
     if (!order.fulfillments || order.fulfillments.length === 0) {
-      return "Not Fulfilled";
+      return "Not Fulfilled"
     }
-    
+
     const allFulfilled = order.fulfillments.every(
-      (f: any) => f.shipped_at || f.delivered_at
-    );
-    
+      (f: HttpTypes.StoreOrderFulfillment) => f.shipped_at || f.delivered_at
+    )
+
     if (allFulfilled) {
-      return "Fulfilled";
+      return "Fulfilled"
     }
-    
-    return "Partially Fulfilled";
-  };
+
+    return "Partially Fulfilled"
+  }
 
   return (
     <div className="container mx-auto px-4 py-12 pt-40 max-w-4xl">
@@ -112,7 +112,7 @@ function OrderDetail() {
         <div>
           <h2 className="text-xl font-bold mb-4">Items</h2>
           <div className="space-y-4">
-            {order.items?.map((item: any) => (
+            {order.items?.map((item: HttpTypes.StoreOrderLineItem) => (
               <div
                 key={item.id}
                 className="flex gap-4 p-4 border border-neutral-200 rounded-lg"
@@ -247,5 +247,5 @@ function OrderDetail() {
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -8,7 +8,7 @@ import {
   useLocation,
   useNavigate,
 } from "@tanstack/react-router"
-import { lazy, Suspense, useEffect, useMemo } from "react"
+import { lazy, Suspense, useCallback, useEffect, useMemo } from "react"
 
 const DeliveryStep = lazy(() => import("@/components/checkout-delivery-step"))
 const AddressStep = lazy(() => import("@/components/checkout-address-step"))
@@ -19,10 +19,10 @@ const CheckoutSummary = lazy(() => import("@/components/checkout-summary"))
 const Checkout = () => {
   const { step } = useLoaderData({
     from: "/$countryCode/checkout",
-  });
-  const { data: cart, isLoading: cartLoading } = useCart();
-  const location = useLocation();
-  const navigate = useNavigate();
+  })
+  const { data: cart, isLoading: cartLoading } = useCart()
+  const location = useLocation()
+  const navigate = useNavigate()
 
   const steps: CheckoutStep[] = useMemo(() => {
     return [
@@ -51,25 +51,28 @@ const Checkout = () => {
         description: "Review your order details before placing your order.",
         completed: false,
       },
-    ];
-  }, [cart]);
+    ]
+  }, [cart])
 
   const currentStepIndex = useMemo(
     () => steps.findIndex((s) => s.key === step),
     [step, steps]
-  );
+  )
 
-  const goToStep = (step: CheckoutStepKey) => {
-    navigate({
-      to: `${location.pathname}?step=${step}`,
-      replace: true,
-    });
-  };
+  const goToStep = useCallback(
+    (stepKey: CheckoutStepKey) => {
+      navigate({
+        to: `${location.pathname}?step=${stepKey}`,
+        replace: true,
+      })
+    },
+    [navigate, location.pathname]
+  )
 
   useEffect(() => {
     // Determine which step to show based on cart state
     if (!cart) {
-      return;
+      return
     }
 
     if (
@@ -77,8 +80,8 @@ const Checkout = () => {
       currentStepIndex >= 0 &&
       !steps[0].completed
     ) {
-      goToStep(CheckoutStepKey.ADDRESSES);
-      return;
+      goToStep(CheckoutStepKey.ADDRESSES)
+      return
     }
 
     if (
@@ -86,8 +89,8 @@ const Checkout = () => {
       currentStepIndex >= 1 &&
       !steps[1].completed
     ) {
-      goToStep(CheckoutStepKey.DELIVERY);
-      return;
+      goToStep(CheckoutStepKey.DELIVERY)
+      return
     }
 
     if (
@@ -95,24 +98,24 @@ const Checkout = () => {
       currentStepIndex >= 2 &&
       !steps[2].completed
     ) {
-      goToStep(CheckoutStepKey.PAYMENT);
-      return;
+      goToStep(CheckoutStepKey.PAYMENT)
+      return
     }
-  }, [cart, steps, location]);
+  }, [cart, steps, step, currentStepIndex, goToStep])
 
   const handleNext = () => {
-    const nextIndex = currentStepIndex + 1;
+    const nextIndex = currentStepIndex + 1
     if (nextIndex < steps.length) {
-      goToStep(steps[nextIndex].key);
+      goToStep(steps[nextIndex].key)
     }
-  };
+  }
 
   const handleBack = () => {
-    const prevIndex = currentStepIndex - 1;
+    const prevIndex = currentStepIndex - 1
     if (prevIndex >= 0) {
-      goToStep(steps[prevIndex].key);
+      goToStep(steps[prevIndex].key)
     }
-  };
+  }
 
   return (
     <div className="content-container pt-40 pb-8 flex flex-col gap-8">
@@ -182,7 +185,7 @@ const Checkout = () => {
         </Suspense>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Checkout;
+export default Checkout

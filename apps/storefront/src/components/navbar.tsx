@@ -14,7 +14,7 @@ import { useCollections } from "@/lib/hooks/use-collections"
 import { getCountryCodeFromPath } from "@/lib/utils/region"
 import * as NavigationMenu from "@radix-ui/react-navigation-menu"
 import { Link, useLocation } from "@tanstack/react-router"
-import { EllipsisHorizontal, User } from "@medusajs/icons"
+import { EllipsisHorizontal } from "@medusajs/icons"
 import { useState, useEffect } from "react"
 
 export const Navbar = () => {
@@ -72,7 +72,8 @@ export const Navbar = () => {
             <div className="flex items-center gap-x-12 h-full">
               {/* Logo */}
               <Link
-                to={baseHref || "/"}
+                to="/$countryCode"
+                params={{ countryCode: countryCode || "us" }}
                 className="text-xl font-display font-semibold hover:text-neutral-600 uppercase tracking-tight transition-colors"
               >
                 Essentials
@@ -99,7 +100,8 @@ export const Navbar = () => {
                         <div className="flex flex-col py-2">
                           <NavigationMenu.Link asChild>
                             <Link
-                              to={`${baseHref}/categories/${topsCategory.handle}`}
+                              to="/$countryCode/categories/$handle"
+                              params={{ countryCode: countryCode || "us", handle: topsCategory.handle }}
                               className="px-6 py-3 text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50 text-sm font-semibold transition-colors"
                             >
                               All Tops
@@ -108,7 +110,8 @@ export const Navbar = () => {
                           {topsCategory.category_children?.map((subcategory) => (
                             <NavigationMenu.Link key={subcategory.id} asChild>
                               <Link
-                                to={`${baseHref}/categories/${subcategory.handle}`}
+                                to="/$countryCode/categories/$handle"
+                                params={{ countryCode: countryCode || "us", handle: subcategory.handle }}
                                 className="px-6 py-3 text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50 text-sm transition-colors"
                               >
                                 {subcategory.name}
@@ -138,7 +141,8 @@ export const Navbar = () => {
                         <div className="flex flex-col py-2">
                           <NavigationMenu.Link asChild>
                             <Link
-                              to={`${baseHref}/categories/${bottomsCategory.handle}`}
+                              to="/$countryCode/categories/$handle"
+                              params={{ countryCode: countryCode || "us", handle: bottomsCategory.handle }}
                               className="px-6 py-3 text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50 text-sm font-semibold transition-colors"
                             >
                               All Bottoms
@@ -147,7 +151,8 @@ export const Navbar = () => {
                           {bottomsCategory.category_children?.map((subcategory) => (
                             <NavigationMenu.Link key={subcategory.id} asChild>
                               <Link
-                                to={`${baseHref}/categories/${subcategory.handle}`}
+                                to="/$countryCode/categories/$handle"
+                                params={{ countryCode: countryCode || "us", handle: subcategory.handle }}
                                 className="px-6 py-3 text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50 text-sm transition-colors"
                               >
                                 {subcategory.name}
@@ -176,7 +181,8 @@ export const Navbar = () => {
                       <div className="flex flex-col py-2">
                         <NavigationMenu.Link asChild>
                           <Link
-                            to={`${baseHref}/store`}
+                            to="/$countryCode/store"
+                            params={{ countryCode: countryCode || "us" }}
                             className="px-6 py-3 text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50 text-sm font-semibold transition-colors"
                           >
                             Shop All
@@ -185,7 +191,8 @@ export const Navbar = () => {
                         {collections?.map((collection) => (
                           <NavigationMenu.Link key={collection.id} asChild>
                             <Link
-                              to={`${baseHref}/collections/${collection.handle}`}
+                              to="/$countryCode/collections/$handle"
+                              params={{ countryCode: countryCode || "us", handle: collection.handle }}
                               className="px-6 py-3 text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50 text-sm transition-colors"
                             >
                               {collection.title}
@@ -240,7 +247,8 @@ export const Navbar = () => {
                         <div className="flex flex-col">
                           <DrawerClose asChild>
                             <Link
-                              to={`${baseHref}/categories/${topsCategory.handle}`}
+                              to="/$countryCode/categories/$handle"
+                              params={{ countryCode: countryCode || "us", handle: topsCategory.handle }}
                               className="px-10 py-3 text-neutral-600 hover:bg-sand-50 transition-colors font-semibold"
                             >
                               All Tops
@@ -249,7 +257,8 @@ export const Navbar = () => {
                           {topsCategory.category_children?.map((subcategory) => (
                             <DrawerClose key={subcategory.id} asChild>
                               <Link
-                                to={`${baseHref}/categories/${subcategory.handle}`}
+                                to="/$countryCode/categories/$handle"
+                                params={{ countryCode: countryCode || "us", handle: subcategory.handle }}
                                 className="px-10 py-3 text-neutral-600 hover:bg-sand-50 transition-colors"
                               >
                                 {subcategory.name}
@@ -269,7 +278,8 @@ export const Navbar = () => {
                         <div className="flex flex-col">
                           <DrawerClose asChild>
                             <Link
-                              to={`${baseHref}/categories/${bottomsCategory.handle}`}
+                              to="/$countryCode/categories/$handle"
+                              params={{ countryCode: countryCode || "us", handle: bottomsCategory.handle }}
                               className="px-10 py-3 text-neutral-600 hover:bg-sand-50 transition-colors font-semibold"
                             >
                               All Bottoms
@@ -278,7 +288,8 @@ export const Navbar = () => {
                           {bottomsCategory.category_children?.map((subcategory) => (
                             <DrawerClose key={subcategory.id} asChild>
                               <Link
-                                to={`${baseHref}/categories/${subcategory.handle}`}
+                                to="/$countryCode/categories/$handle"
+                                params={{ countryCode: countryCode || "us", handle: subcategory.handle }}
                                 className="px-10 py-3 text-neutral-600 hover:bg-sand-50 transition-colors"
                               >
                                 {subcategory.name}
@@ -296,7 +307,8 @@ export const Navbar = () => {
                     <div className="flex flex-col">
                       <DrawerClose asChild>
                         <Link
-                          to={`${baseHref}/store`}
+                          to="/$countryCode/store"
+                          params={{ countryCode: countryCode || "us" }}
                           className="px-10 py-3 text-neutral-600 hover:bg-sand-50 transition-colors font-semibold"
                         >
                           Shop All
@@ -305,7 +317,8 @@ export const Navbar = () => {
                       {collections?.map((collection) => (
                         <DrawerClose key={collection.id} asChild>
                           <Link
-                            to={`${baseHref}/collections/${collection.handle}`}
+                            to="/$countryCode/collections/$handle"
+                            params={{ countryCode: countryCode || "us", handle: collection.handle }}
                             className="px-10 py-3 text-neutral-600 hover:bg-sand-50 transition-colors"
                           >
                             {collection.title}

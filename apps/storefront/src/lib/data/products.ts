@@ -165,25 +165,23 @@ export const retrieveProduct = async ({
  */
 export const getBestSellingProductIds = async (): Promise<string[]> => {
   try {
-    const backendUrl = import.meta.env.VITE_MEDUSA_BACKEND_URL || "http://localhost:9000";
-    const publishableKey = import.meta.env.VITE_MEDUSA_PUBLISHABLE_KEY;
+    const backendUrl = import.meta.env.VITE_MEDUSA_BACKEND_URL || "http://localhost:9000"
+    const publishableKey = import.meta.env.VITE_MEDUSA_PUBLISHABLE_KEY
     
     const response = await fetch(`${backendUrl}/store/best-selling`, {
       headers: {
         "Content-Type": "application/json",
         ...(publishableKey && { "x-publishable-api-key": publishableKey }),
       },
-    });
+    })
     
     if (!response.ok) {
-      console.error("Failed to fetch best selling products", response.status);
-      return [];
+      return []
     }
     
-    const { product_ids } = await response.json();
-    return product_ids || [];
-  } catch (error) {
-    console.error("Error fetching best selling products:", error);
-    return [];
+    const { product_ids } = await response.json()
+    return product_ids || []
+  } catch {
+    return []
   }
 }

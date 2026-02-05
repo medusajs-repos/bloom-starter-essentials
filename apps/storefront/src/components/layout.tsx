@@ -22,7 +22,7 @@ const Layout = () => {
         </div>
       </CartProvider>
     </ToastProvider>
-  );
-};
+  )
+}
 
-export default Layout;
+export default Layout

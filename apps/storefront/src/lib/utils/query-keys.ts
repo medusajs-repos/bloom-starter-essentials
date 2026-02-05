@@ -2,8 +2,8 @@ import { Query } from "@tanstack/react-query"
 
 const createDomainKeys = (domain: string) => ({
   all: [domain] as const,
-  list: (...params: any[]) => [domain, "list", ...params] as const,
-  detail: (id: string, ...params: any[]) => [domain, "detail", id, ...params] as const,
+  list: (...params: unknown[]) => [domain, "list", ...params] as const,
+  detail: (id: string, ...params: unknown[]) => [domain, "detail", id, ...params] as const,
   predicate: <TData = unknown, TError = Error>(
     query: Query<TData, TError, TData, readonly unknown[]>,
     excludeKeys?: string[],
@@ -16,7 +16,7 @@ const createDomainKeys = (domain: string) => ({
   },
 })
 
-const createDynamicKey = (domain: string, key: string, ...params: any[]) =>
+const createDynamicKey = (domain: string, key: string, ...params: unknown[]) =>
   [domain, key, ...params] as const
 
 export const queryKeys = {

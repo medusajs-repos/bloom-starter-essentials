@@ -39,7 +39,18 @@ export const getPricePercentageDiff = (original: number, calculated: number): st
 
 // ============ PRODUCT PRICE ============
 
-export const getPricesForVariant = (variant: any): {
+type VariantWithCalculatedPrice = HttpTypes.StoreProductVariant & {
+  calculated_price?: {
+    calculated_amount: number
+    original_amount: number
+    currency_code: string
+    calculated_price?: {
+      price_list_type: string
+    }
+  }
+}
+
+export const getPricesForVariant = (variant: VariantWithCalculatedPrice | null | undefined): {
   calculated_price_number: number;
   calculated_price: string;
   original_price_number: number;
@@ -64,7 +75,7 @@ export const getPricesForVariant = (variant: any): {
       currency_code: variant.calculated_price.currency_code,
     }),
     currency_code: variant.calculated_price.currency_code,
-    price_type: variant.calculated_price.calculated_price.price_list_type,
+    price_type: variant.calculated_price.calculated_price?.price_list_type ?? "default",
     percentage_diff: getPricePercentageDiff(
       variant.calculated_price.original_amount,
       variant.calculated_price.calculated_amount
@@ -108,12 +119,13 @@ export function getProductPrice({
       return null
     }
 
-    const cheapestVariant: any = product.variants
-      .filter((v: any) => !!v.calculated_price)
-      .sort((a: any, b: any) => {
+    const variantsWithPrice = product.variants as VariantWithCalculatedPrice[]
+    const cheapestVariant = variantsWithPrice
+      .filter((v) => !!v.calculated_price)
+      .sort((a, b) => {
         return (
-          a.calculated_price.calculated_amount -
-          b.calculated_price.calculated_amount
+          (a.calculated_price?.calculated_amount ?? 0) -
+          (b.calculated_price?.calculated_amount ?? 0)
         )
       })[0]
 
@@ -125,9 +137,9 @@ export function getProductPrice({
       return null
     }
 
-    const variant: any = product.variants?.find(
+    const variant = product.variants?.find(
       (v) => v.id === variant_id || v.sku === variant_id
-    )
+    ) as VariantWithCalculatedPrice | undefined
 
     if (!variant) {
       return null
@@ -151,11 +163,11 @@ export function getProductPrice({
  */
 export const getPriceFilterOptions = (currency_code: string) => {
   const currencyUpper = currency_code.toUpperCase()
-  const symbol = formatPrice({ amount: 0, currency_code }).replace(/[\d.,]/g, '').trim()
+  const symbol = formatPrice({ amount: 0, currency_code }).replace(/[\d.,]/g, "").trim()
 
   // Define ranges based on currency
   // EUR and USD have similar value ranges
-  if (currencyUpper === 'EUR' || currencyUpper === 'USD') {
+  if (currencyUpper === "EUR" || currencyUpper === "USD") {
     return [
       { id: "0-50", label: `Under ${symbol}50`, min: 0, max: 50 },
       { id: "50-100", label: `${symbol}50 - ${symbol}100`, min: 50, max: 100 },
@@ -165,7 +177,7 @@ export const getPriceFilterOptions = (currency_code: string) => {
   }
   
   // GBP - slightly adjust ranges
-  if (currencyUpper === 'GBP') {
+  if (currencyUpper === "GBP") {
     return [
       { id: "0-40", label: `Under ${symbol}40`, min: 0, max: 40 },
       { id: "40-80", label: `${symbol}40 - ${symbol}80`, min: 40, max: 80 },
@@ -175,7 +187,7 @@ export const getPriceFilterOptions = (currency_code: string) => {
   }
 
   // DKK - Danish Krone has higher numerical values
-  if (currencyUpper === 'DKK') {
+  if (currencyUpper === "DKK") {
     return [
       { id: "0-350", label: `Under ${symbol}350`, min: 0, max: 350 },
       { id: "350-700", label: `${symbol}350 - ${symbol}700`, min: 350, max: 700 },

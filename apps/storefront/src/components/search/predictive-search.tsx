@@ -8,11 +8,9 @@ import { getCountryCodeFromPath } from "@/lib/utils/region"
 export const PredictiveSearch = () => {
   const [query, setQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
-  const [isFocused, setIsFocused] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
   const location = useLocation()
   const countryCode = getCountryCodeFromPath(location.pathname)
-  const baseHref = countryCode ? `/${countryCode}` : ""
   
   const { data: region } = useRegion({ country_code: countryCode || "" })
 
@@ -31,7 +29,6 @@ export const PredictiveSearch = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setIsOpen(false)
-        setIsFocused(false)
       }
     }
 
@@ -42,10 +39,9 @@ export const PredictiveSearch = () => {
   const handleClose = () => {
     setIsOpen(false)
     setQuery("")
-    setIsFocused(false)
   }
 
-  const formatPrice = (amount?: number, currencyCode?: string) => {
+  const formatPrice = (amount?: number | null, currencyCode?: string | null) => {
     if (!amount || !currencyCode) return ""
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -60,7 +56,6 @@ export const PredictiveSearch = () => {
         <button
           onClick={() => {
             setIsOpen(true)
-            setIsFocused(true)
           }}
           className="flex items-center justify-center text-neutral-700 hover:text-neutral-900 transition-colors"
           aria-label="Search"
@@ -100,41 +95,46 @@ export const PredictiveSearch = () => {
                       {products.length} Results
                     </p>
                     <div className="space-y-4">
-                      {products.map((product) => (
-                        <Link
-                          key={product.id}
-                          to={`${baseHref}/products/${product.handle}`}
-                          onClick={handleClose}
-                          className="flex items-center gap-4 hover:bg-sand-50 p-2 transition-colors"
-                        >
-                          <div className="w-16 h-16 bg-sand-100 flex-shrink-0 overflow-hidden">
-                            {product.thumbnail ? (
-                              <img
-                                src={product.thumbnail}
-                                alt={product.title}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <span className="text-neutral-300 text-xs">No Image</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-medium text-neutral-900 truncate">
-                              {product.title}
-                            </h4>
-                            {product.calculated_price && (
-                              <p className="text-sm text-neutral-600">
-                                {formatPrice(
-                                  product.calculated_price.calculated_amount,
-                                  product.calculated_price.currency_code
-                                )}
-                              </p>
-                            )}
-                          </div>
-                        </Link>
-                      ))}
+                      {products.map((product) => {
+                        const variant = product.variants?.[0]
+                        const calculatedPrice = variant?.calculated_price
+                        return (
+                          <Link
+                            key={product.id}
+                            to="/$countryCode/products/$handle"
+                            params={{ countryCode: countryCode || "us", handle: product.handle || "" }}
+                            onClick={handleClose}
+                            className="flex items-center gap-4 hover:bg-sand-50 p-2 transition-colors"
+                          >
+                            <div className="w-16 h-16 bg-sand-100 flex-shrink-0 overflow-hidden">
+                              {product.thumbnail ? (
+                                <img
+                                  src={product.thumbnail}
+                                  alt={product.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <span className="text-neutral-300 text-xs">No Image</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-medium text-neutral-900 truncate">
+                                {product.title}
+                              </h4>
+                              {calculatedPrice && (
+                                <p className="text-sm text-neutral-600">
+                                  {formatPrice(
+                                    calculatedPrice.calculated_amount,
+                                    calculatedPrice.currency_code
+                                  )}
+                                </p>
+                              )}
+                            </div>
+                          </Link>
+                        )
+                      })}
                     </div>
                   </div>
                 ) : (
@@ -188,41 +188,46 @@ export const PredictiveSearch = () => {
                     {products.length} Results
                   </p>
                   <div className="space-y-4">
-                    {products.map((product) => (
-                      <Link
-                        key={product.id}
-                        to={`${baseHref}/products/${product.handle}`}
-                        onClick={handleClose}
-                        className="flex items-center gap-4 hover:bg-sand-50 p-2 transition-colors"
-                      >
-                        <div className="w-16 h-16 bg-sand-100 flex-shrink-0 overflow-hidden">
-                          {product.thumbnail ? (
-                            <img
-                              src={product.thumbnail}
-                              alt={product.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <span className="text-neutral-300 text-xs">No Image</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-neutral-900 truncate">
-                            {product.title}
-                          </h4>
-                          {product.calculated_price && (
-                            <p className="text-sm text-neutral-600">
-                              {formatPrice(
-                                product.calculated_price.calculated_amount,
-                                product.calculated_price.currency_code
-                              )}
-                            </p>
-                          )}
-                        </div>
-                      </Link>
-                    ))}
+                    {products.map((product) => {
+                      const variant = product.variants?.[0]
+                      const calculatedPrice = variant?.calculated_price
+                      return (
+                        <Link
+                          key={product.id}
+                          to="/$countryCode/products/$handle"
+                          params={{ countryCode: countryCode || "us", handle: product.handle || "" }}
+                          onClick={handleClose}
+                          className="flex items-center gap-4 hover:bg-sand-50 p-2 transition-colors"
+                        >
+                          <div className="w-16 h-16 bg-sand-100 flex-shrink-0 overflow-hidden">
+                            {product.thumbnail ? (
+                              <img
+                                src={product.thumbnail}
+                                alt={product.title}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <span className="text-neutral-300 text-xs">No Image</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-medium text-neutral-900 truncate">
+                              {product.title}
+                            </h4>
+                            {calculatedPrice && (
+                              <p className="text-sm text-neutral-600">
+                                {formatPrice(
+                                  calculatedPrice.calculated_amount,
+                                  calculatedPrice.currency_code
+                                )}
+                              </p>
+                            )}
+                          </div>
+                        </Link>
+                      )
+                    })}
                   </div>
                 </div>
               ) : (
