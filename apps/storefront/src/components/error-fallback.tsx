@@ -8,8 +8,8 @@ interface ErrorFallbackProps {
 }
 
 const ErrorFallback = ({ error, reset }: ErrorFallbackProps) => {
-  const isDev = import.meta.env.DEV;
-  const [showDetails, setShowDetails] = useState(false);
+  const isDev = import.meta.env.DEV
+  const [showDetails, setShowDetails] = useState(false)
 
   return (
     <div className="content-container py-16">
@@ -133,7 +133,7 @@ const ErrorFallback = ({ error, reset }: ErrorFallbackProps) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ErrorFallback;
+export default ErrorFallback

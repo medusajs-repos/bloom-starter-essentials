@@ -39,7 +39,7 @@ const CheckoutProgress = ({
         </div>
       ))}
     </div>
-  );
-};
+  )
+}
 
-export default CheckoutProgress;
+export default CheckoutProgress

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Link, useLocation } from "@tanstack/react-router"
 
 const NotFound = () => {
-  const location = useLocation();
+  const location = useLocation()
 
   return (
     <div className="content-container py-12">
@@ -36,7 +36,7 @@ const NotFound = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default NotFound;
+export default NotFound

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useLogin, useRegister } from "../lib/hooks/use-customer"
+import { useLogin, useRegister } from "@/lib/hooks/use-customer"
 import { useNavigate, useParams } from "@tanstack/react-router"
 
 export function Auth() {
@@ -31,8 +31,9 @@ export function Auth() {
         })
       }
       navigate({ to: "/$countryCode/account", params: { countryCode: countryCode || "de" } })
-    } catch (err: any) {
-      setError(err?.message || "Authentication failed. Please try again.")
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Authentication failed. Please try again."
+      setError(message)
     }
   }
 

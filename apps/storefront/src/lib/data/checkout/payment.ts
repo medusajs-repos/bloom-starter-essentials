@@ -108,7 +108,7 @@ export const initiateCartPaymentSession = async ({
   data,
 }: {
   provider_id: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }): Promise<HttpTypes.StorePaymentCollection> => {
   const cartId = getStoredCart()
 

@@ -1,17 +1,14 @@
 import { useLocation, useLoaderData, Link } from "@tanstack/react-router"
 import { getCountryCodeFromPath } from "@/lib/utils/region"
-import { useCategories } from "@/lib/hooks/use-categories"
 import { useProducts } from "@/lib/hooks/use-products"
 import { useCollections } from "@/lib/hooks/use-collections"
-import { Hero } from "@/components/sections/hero"
-import { FeaturedCollections } from "@/components/sections/featured-collections"
 import { ProductGrid } from "@/components/sections/product-grid"
 import { LifestyleEditorial } from "@/components/sections/lifestyle-editorial"
 import { CollectionShowcase } from "@/components/sections/collection-showcase"
-import { PromoBanner } from "@/components/sections/promo-banner"
 import { Newsletter } from "@/components/sections/newsletter"
 import { VideoTestimonials } from "@/components/sections/video-testimonials"
 import { ArrowRight } from "@medusajs/icons"
+import { HttpTypes } from "@medusajs/types"
 
 /**
  * Home Page - Premium Athleisure Storefront
@@ -27,17 +24,7 @@ import { ArrowRight } from "@medusajs/icons"
 const Home = () => {
   const location = useLocation()
   const { region } = useLoaderData({ from: "/$countryCode/" })
-  const countryCode = getCountryCodeFromPath(location.pathname)
-  const baseHref = countryCode ? `/${countryCode}` : ""
-
-  // Fetch top-level categories
-  const { data: categories } = useCategories({
-    fields: "id,name,handle",
-    queryParams: {
-      parent_category_id: "null",
-      limit: 3,
-    },
-  })
+  const countryCode = getCountryCodeFromPath(location.pathname) || "us"
 
   // Fetch featured products (showing first 8 products as bestsellers)
   const { data: productsData } = useProducts({
@@ -68,16 +55,13 @@ const Home = () => {
           imageUrl: "https://cdn.mignite.app/ws/works_01KGFKTHDC6ZD3WS7GQTX8992N/NanoBanana-2026-02-04-1--01KGMCJ09NGECFMM8QVAY13MY3.png",
         },
         {
-          id: collections.find((c: any) => c.handle === "outer-layers")?.id || collections[2]?.id || "",
-          title: collections.find((c: any) => c.handle === "outer-layers")?.title || collections[2]?.title || "",
+          id: collections.find((c: HttpTypes.StoreCollection) => c.handle === "outer-layers")?.id || collections[2]?.id || "",
+          title: collections.find((c: HttpTypes.StoreCollection) => c.handle === "outer-layers")?.title || collections[2]?.title || "",
           handle: "outer-layers",
           imageUrl: "https://cdn.mignite.app/ws/works_01KGFKTHDC6ZD3WS7GQTX8992N/Gro-nano_banana_pro_20260204_133831_1--01KGMCNPB3SC30ZKSH1ZPWX149.jpeg",
         },
       ]
     : []
-
-  console.log("productsData:", productsData)
-  console.log("region:", region)
 
   return (
     <div className="min-h-screen">
@@ -90,7 +74,7 @@ const Home = () => {
           muted
           playsInline
           className="w-full h-full object-cover"
-          style={{ objectPosition: 'center center' }}
+          style={{ objectPosition: "center center" }}
         />
       </div>
 
@@ -104,7 +88,8 @@ const Home = () => {
             Scandinavian-inspired athleisure designed for everyday balance.
           </p>
           <Link
-            to={`${baseHref}/collections/core-essentials`}
+            to="/$countryCode/collections/$handle"
+            params={{ countryCode, handle: "core-essentials" }}
             className="inline-flex items-center gap-2 bg-neutral-900 text-neutral-50 px-8 py-4 hover:bg-neutral-800 transition-colors uppercase text-xs font-semibold tracking-wider"
           >
             Shop Core Essentials
@@ -120,8 +105,8 @@ const Home = () => {
           <ProductGrid
             title="Elevated essentials for everyday."
             description="Functional athleisure made of premium materials to improve your life in small but mighty ways."
-            products={productsData.pages[0].products}
-            baseHref={baseHref}
+            products={productsData.pages[0].products as { id: string; title: string; handle: string; thumbnail?: string; variants?: Array<{ id: string; calculated_price?: { calculated_amount: number; currency_code: string } }> }[]}
+            countryCode={countryCode}
             showQuickBuy={true}
           />
         )}
@@ -133,13 +118,13 @@ const Home = () => {
         title="Built for the in-between"
         description="Essentials is built for the in-between moments — the walk to the studio, the coffee after training, the quiet hours at home."
         ctaText="Our Story"
-        ctaHref={`${baseHref}/about`}
+        ctaHref={`/${countryCode}/about`}
         imageUrl="https://cdn.mignite.app/ws/works_01KGFKTHDC6ZD3WS7GQTX8992N/nano_banana_pro_20260204_141238_1-01KGMCQQ1KXNTY3K55VA3T84KE.png"
       />
 
       {/* Collection Showcase */}
       {collectionsWithImages.length > 0 && (
-        <CollectionShowcase collections={collectionsWithImages} />
+        <CollectionShowcase collections={collectionsWithImages} countryCode={countryCode} />
       )}
 
         {/* Video & Testimonials */}

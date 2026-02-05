@@ -9,8 +9,7 @@ import { Loading } from "@/components/ui/loading"
 import { useCart, useCreateCart } from "@/lib/hooks/use-cart"
 import { useProducts } from "@/lib/hooks/use-products"
 import { sortCartItems } from "@/lib/utils/cart"
-import { Link, useLoaderData, useLocation } from "@tanstack/react-router"
-import { getCountryCodeFromPath } from "@/lib/utils/region"
+import { useLoaderData } from "@tanstack/react-router"
 import { useState, useEffect } from "react"
 
 const DEFAULT_CART_FIELDS =
@@ -29,7 +28,6 @@ const Cart = () => {
   const { region, countryCode } = useLoaderData({
     from: "/$countryCode/cart",
   })
-  const location = useLocation()
   const baseHref = countryCode ? `/${countryCode}` : ""
   
   const { data: cart, isLoading: cartLoading } = useCart({
@@ -48,8 +46,10 @@ const Cart = () => {
 
   // Fetch cross-sell products
   const { data: crossSellData } = useProducts({
-    fields: "id,title,handle,thumbnail,calculated_price",
-    queryParams: { limit: 4 },
+    query_params: {
+      limit: 4,
+      fields: "id,title,handle,thumbnail,*variants.calculated_price",
+    },
     region_id: region.id,
   })
 
@@ -62,7 +62,7 @@ const Cart = () => {
 
   const cartItems = sortCartItems(cart?.items || [])
 
-  const formatPrice = (amount?: number, currencyCode?: string) => {
+  const formatPrice = (amount?: number | null, currencyCode?: string | null) => {
     if (!amount || !currencyCode) return ""
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -192,11 +192,11 @@ const Cart = () => {
                       <h3 className="text-sm font-medium text-neutral-900 mb-2 group-hover:text-neutral-600 transition-colors">
                         {product.title}
                       </h3>
-                      {product.calculated_price && (
+                      {product.variants?.[0]?.calculated_price && (
                         <p className="text-sm text-neutral-600">
                           {formatPrice(
-                            product.calculated_price.calculated_amount,
-                            product.calculated_price.currency_code
+                            product.variants[0].calculated_price.calculated_amount,
+                            product.variants[0].calculated_price.currency_code
                           )}
                         </p>
                       )}

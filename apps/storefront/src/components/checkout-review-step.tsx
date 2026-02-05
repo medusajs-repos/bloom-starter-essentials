@@ -12,8 +12,8 @@ interface ReviewStepProps {
 }
 
 const ReviewStep = ({ cart, onBack }: ReviewStepProps) => {
-  const paidByGiftcard = isPaidWithGiftCard(cart);
-  const activeSession = getActivePaymentSession(cart);
+  const paidByGiftcard = isPaidWithGiftCard(cart)
+  const activeSession = getActivePaymentSession(cart)
 
   return (
     <div className="flex flex-col gap-8">
@@ -85,7 +85,7 @@ const ReviewStep = ({ cart, onBack }: ReviewStepProps) => {
         <PaymentButton cart={cart} />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ReviewStep;
+export default ReviewStep

@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { useSetCartAddresses } from "@/lib/hooks/use-checkout"
+import { AddressFormData } from "@/lib/types/global"
 import { getStoredCountryCode } from "@/lib/utils/region"
 import { HttpTypes } from "@medusajs/types"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { sdk } from "@/lib/utils/sdk"
 import { useQuery } from "@tanstack/react-query"
 
@@ -15,13 +16,13 @@ interface AddressStepProps {
 }
 
 const AddressStep = ({ cart, onNext }: AddressStepProps) => {
-  const setAddressesMutation = useSetCartAddresses();
-  const [sameAsBilling, setSameAsBilling] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isShippingAddressValid, setIsShippingAddressValid] = useState(false);
-  const [isBillingAddressValid, setIsBillingAddressValid] = useState(false);
-  const [email, setEmail] = useState(cart.email || "");
-  const storedCountryCode = getStoredCountryCode();
+  const setAddressesMutation = useSetCartAddresses()
+  const [sameAsBilling, setSameAsBilling] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isShippingAddressValid, setIsShippingAddressValid] = useState(false)
+  const [isBillingAddressValid, setIsBillingAddressValid] = useState(false)
+  const [email, setEmail] = useState(cart.email || "")
+  const storedCountryCode = getStoredCountryCode()
 
   // Fetch all regions and countries for worldwide shipping
   const { data: allCountries } = useQuery({
@@ -29,16 +30,16 @@ const AddressStep = ({ cart, onNext }: AddressStepProps) => {
     queryFn: async () => {
       const { regions } = await sdk.store.region.list({
         fields: "countries.*",
-      });
+      })
       // Flatten all countries from all regions
-      const countries = regions?.flatMap((region: HttpTypes.StoreRegion) => region.countries || []) || [];
-      return countries;
+      const countries = regions?.flatMap((region: HttpTypes.StoreRegion) => region.countries || []) || []
+      return countries
     },
-  });
+  })
   // Get the default country from the cart's region
-  const defaultCountryCode = cart.region?.countries?.[0]?.iso_2 || storedCountryCode || "";
+  const defaultCountryCode = cart.region?.countries?.[0]?.iso_2 || storedCountryCode || ""
 
-  const [shippingAddress, setShippingAddress] = useState<Record<string, any>>({
+  const [shippingAddress, setShippingAddress] = useState<AddressFormData>({
     first_name: cart.shipping_address?.first_name || "",
     last_name: cart.shipping_address?.last_name || "",
     company: cart.shipping_address?.company || "",
@@ -50,8 +51,8 @@ const AddressStep = ({ cart, onNext }: AddressStepProps) => {
     country_code:
       cart.shipping_address?.country_code || defaultCountryCode,
     phone: cart.shipping_address?.phone || "",
-  });
-  const [billingAddress, setBillingAddress] = useState<Record<string, any>>({
+  })
+  const [billingAddress, setBillingAddress] = useState<AddressFormData>({
     first_name: cart.billing_address?.first_name || "",
     last_name: cart.billing_address?.last_name || "",
     company: cart.billing_address?.company || "",
@@ -62,59 +63,52 @@ const AddressStep = ({ cart, onNext }: AddressStepProps) => {
     province: cart.billing_address?.province || "",
     country_code: cart.billing_address?.country_code || defaultCountryCode,
     phone: cart.billing_address?.phone || "",
-  });
+  })
 
 
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    if (isSubmitting) return;
+    if (isSubmitting) return
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
 
     try {
-      const submitData = new FormData();
+      const submitData = new FormData()
 
       // Add email
-      submitData.append("email", email);
+      submitData.append("email", email)
 
       // Add shipping address
       Object.entries(shippingAddress).forEach(([key, value]) => {
-        submitData.append(`shipping_address.${key}`, value);
-      });
+        submitData.append(`shipping_address.${key}`, value)
+      })
 
       // Add billing address (same as shipping if checkbox is checked)
-      const billingData = sameAsBilling ? shippingAddress : billingAddress;
+      const billingData = sameAsBilling ? shippingAddress : billingAddress
       Object.entries(billingData).forEach(([key, value]) => {
-        submitData.append(`billing_address.${key}`, value);
-      });
+        submitData.append(`billing_address.${key}`, value)
+      })
 
-      await setAddressesMutation.mutateAsync(submitData);
-      onNext();
-    } catch (error) {
-      console.error("Failed to set addresses:", error);
+      await setAddressesMutation.mutateAsync(submitData)
+      onNext()
+    } catch {
+      // Error handled by mutation
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const isFormValid = () => {
-    const emailValid = email.trim() && email.includes("@");
-    const valid = emailValid &&
+    const emailValid = email.trim() && email.includes("@")
+
+    return (
+      emailValid &&
       isShippingAddressValid &&
-      (isBillingAddressValid || sameAsBilling);
-    
-    console.log('Form validation:', {
-      emailValid,
-      isShippingAddressValid,
-      isBillingAddressValid,
-      sameAsBilling,
-      valid
-    });
-    
-    return valid;
-  };
+      (isBillingAddressValid || sameAsBilling)
+    )
+  }
 
 
 
@@ -187,7 +181,7 @@ const AddressStep = ({ cart, onNext }: AddressStepProps) => {
         </div>
       </form>
     </div>
-  );
-};
+  )
+}
 
-export default AddressStep;
+export default AddressStep

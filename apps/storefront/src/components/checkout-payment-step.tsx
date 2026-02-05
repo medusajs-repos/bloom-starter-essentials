@@ -18,27 +18,19 @@ interface PaymentStepProps {
 const PaymentStep = ({ cart, onNext, onBack }: PaymentStepProps) => {
   const { data: availablePaymentMethods = [] } = useCartPaymentMethods({
     region_id: cart.region?.id,
-  });
-  const initiatePaymentSessionMutation = useInitiateCartPaymentSession();
+  })
+  const initiatePaymentSessionMutation = useInitiateCartPaymentSession()
 
-  const activeSession = getActivePaymentSession(cart);
+  const activeSession = getActivePaymentSession(cart)
 
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null)
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
     activeSession?.provider_id ?? ""
-  );
+  )
 
-  // Update selected payment method when payment methods are loaded
-  useEffect(() => {
-    if (!selectedPaymentMethod && availablePaymentMethods?.length > 0) {
-      setSelectedPaymentMethod(availablePaymentMethods[0].id);
-      handlePaymentMethodChange(availablePaymentMethods[0].id);
-    }
-  }, [availablePaymentMethods, selectedPaymentMethod]);
+  const isStripe = isStripeFunc(selectedPaymentMethod)
 
-  const isStripe = isStripeFunc(selectedPaymentMethod);
-
-  const paidByGiftcard = isPaidWithGiftCard(cart);
+  const paidByGiftcard = isPaidWithGiftCard(cart)
 
   const initiatePaymentSession = useCallback(
     async (method: string) => {
@@ -48,30 +40,41 @@ const PaymentStep = ({ cart, onNext, onBack }: PaymentStepProps) => {
           onError: (error) => {
             setError(
               error instanceof Error ? error.message : "An error occurred"
-            );
+            )
           },
         }
-      );
+      )
     },
     [initiatePaymentSessionMutation]
-  );
+  )
 
-  const handlePaymentMethodChange = async (method: string) => {
-    setError(null);
-    setSelectedPaymentMethod(method);
+  const handlePaymentMethodChange = useCallback(
+    async (method: string) => {
+      setError(null)
+      setSelectedPaymentMethod(method)
 
-    initiatePaymentSession(method);
-  };
+      initiatePaymentSession(method)
+    },
+    [initiatePaymentSession]
+  )
+
+  // Update selected payment method when payment methods are loaded
+  useEffect(() => {
+    if (!selectedPaymentMethod && availablePaymentMethods?.length > 0) {
+      setSelectedPaymentMethod(availablePaymentMethods[0].id)
+      handlePaymentMethodChange(availablePaymentMethods[0].id)
+    }
+  }, [availablePaymentMethods, selectedPaymentMethod, handlePaymentMethodChange])
 
   const handleSubmit = useCallback(async () => {
-    if (!selectedPaymentMethod) return;
+    if (!selectedPaymentMethod) return
 
     if (!activeSession) {
-      await initiatePaymentSession(selectedPaymentMethod);
+      await initiatePaymentSession(selectedPaymentMethod)
     }
 
-    onNext();
-  }, [selectedPaymentMethod, activeSession, onNext, initiatePaymentSession]);
+    onNext()
+  }, [selectedPaymentMethod, activeSession, onNext, initiatePaymentSession])
 
   return (
     <div className="flex flex-col gap-8">
@@ -150,7 +153,7 @@ const PaymentStep = ({ cart, onNext, onBack }: PaymentStepProps) => {
         </Button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default PaymentStep;
+export default PaymentStep

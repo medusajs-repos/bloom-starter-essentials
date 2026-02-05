@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query"
-import { HttpTypes } from "@medusajs/types"
 import { queryKeys } from "@/lib/utils/query-keys"
 import { sdk } from "@/lib/utils/sdk"
 

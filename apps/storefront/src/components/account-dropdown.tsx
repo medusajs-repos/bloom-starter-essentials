@@ -1,5 +1,4 @@
-import { useCustomer } from "@/lib/hooks/use-customer"
-import { useLogout } from "@/lib/hooks/use-customer"
+import { useCustomer, useLogout } from "@/lib/hooks/use-customer"
 import { getCountryCodeFromPath } from "@/lib/utils/region"
 import * as NavigationMenu from "@radix-ui/react-navigation-menu"
 import { Link, useLocation } from "@tanstack/react-router"
@@ -35,7 +34,7 @@ export const AccountDropdown = () => {
                 <NavigationMenu.Link asChild>
                   <Link
                     to="/$countryCode/account"
-                    params={{ countryCode }}
+                    params={{ countryCode: countryCode || "us" }}
                     className="px-6 py-3 text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50 text-sm transition-colors"
                   >
                     My Account
@@ -44,7 +43,7 @@ export const AccountDropdown = () => {
                 <NavigationMenu.Link asChild>
                   <Link
                     to="/$countryCode/account/orders"
-                    params={{ countryCode }}
+                    params={{ countryCode: countryCode || "us" }}
                     className="px-6 py-3 text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50 text-sm transition-colors"
                   >
                     My Orders
@@ -62,7 +61,7 @@ export const AccountDropdown = () => {
                 <NavigationMenu.Link asChild>
                   <Link
                     to="/$countryCode/account"
-                    params={{ countryCode }}
+                    params={{ countryCode: countryCode || "us" }}
                     className="px-6 py-3 text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50 text-sm transition-colors"
                   >
                     Login

@@ -1,4 +1,4 @@
-import { clsx } from "clsx";
+import { clsx } from "clsx"
 
 type ButtonProps = React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -38,5 +38,5 @@ export const Button = ({
         className
       )}
     />
-  );
-};
+  )
+}

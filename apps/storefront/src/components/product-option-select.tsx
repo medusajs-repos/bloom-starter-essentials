@@ -1,6 +1,6 @@
-import { HttpTypes } from "@medusajs/types";
-import { clsx } from "clsx";
-import React from "react";
+import { HttpTypes } from "@medusajs/types"
+import { clsx } from "clsx"
+import React from "react"
 
 type ProductOptionSelectProps = {
   option: HttpTypes.StoreProductOption;
@@ -19,7 +19,7 @@ const ProductOptionSelect: React.FC<ProductOptionSelectProps> = ({
   "data-testid": dataTestId,
   disabled,
 }) => {
-  const filteredOptions = (option.values ?? []).map((v) => v.value);
+  const filteredOptions = (option.values ?? []).map((v) => v.value)
 
   return (
     <div className="flex flex-col gap-y-3">
@@ -29,7 +29,7 @@ const ProductOptionSelect: React.FC<ProductOptionSelectProps> = ({
         data-testid={dataTestId}
       >
         {filteredOptions.map((v) => {
-          const isActive = v === current;
+          const isActive = v === current
           return (
             <button
               onClick={() => updateOption(option.id, v)}
@@ -55,11 +55,11 @@ const ProductOptionSelect: React.FC<ProductOptionSelectProps> = ({
             >
               {v}
             </button>
-          );
+          )
         })}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ProductOptionSelect;
+export default ProductOptionSelect

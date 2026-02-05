@@ -17,7 +17,7 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
   children,
   onClick,
 }) => {
-  const isSelected = selectedPaymentOptionId === paymentProviderId;
+  const isSelected = selectedPaymentOptionId === paymentProviderId
 
   return (
     <div
@@ -41,7 +41,7 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
       </div>
       {children}
     </div>
-  );
-};
+  )
+}
 
-export default PaymentContainer;
+export default PaymentContainer

@@ -1,14 +1,14 @@
-import { Check } from "@medusajs/icons";
-import { clsx } from "clsx";
-import { forwardRef } from "react";
+import { Check } from "@medusajs/icons"
+import { clsx } from "clsx"
+import { forwardRef } from "react"
 
 type CheckboxProps = React.InputHTMLAttributes<HTMLInputElement>;
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   ({ className, onChange, checked, ...props }, ref) => {
     const handleCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
-      onChange?.(e);
-    };
+      onChange?.(e)
+    }
 
     return (
       <div className="relative inline-block w-4 h-4">
@@ -42,6 +42,6 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           <Check className="text-zinc-900" />
         </span>
       </div>
-    );
+    )
   }
-);
+)

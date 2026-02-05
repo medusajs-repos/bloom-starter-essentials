@@ -1,10 +1,10 @@
-import { clsx } from "clsx";
+import { clsx } from "clsx"
 
 type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
 
 export const Input = ({ className, value, ...props }: InputProps) => {
   // Ensure value is always defined to prevent uncontrolled->controlled warning
-  const controlledValue = value === undefined || value === null ? "" : value;
+  const controlledValue = value === undefined || value === null ? "" : value
   
   return (
     <input
@@ -21,5 +21,5 @@ export const Input = ({ className, value, ...props }: InputProps) => {
       value={controlledValue}
       {...props}
     />
-  );
-};
+  )
+}

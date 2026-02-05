@@ -36,3 +36,16 @@ export type CheckoutStep = {
   description: string
   completed: boolean
 }
+
+export type AddressFormData = {
+  first_name: string
+  last_name: string
+  company: string
+  address_1: string
+  address_2: string
+  city: string
+  postal_code: string
+  province: string
+  country_code: string
+  phone: string
+}

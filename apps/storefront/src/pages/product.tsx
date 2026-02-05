@@ -26,20 +26,16 @@ const ProductDetails = () => {
   })
   
   const location = useLocation()
-  const countryCode = getCountryCodeFromPath(location.pathname)
-  const baseHref = countryCode ? `/${countryCode}` : ""
+  const countryCode = getCountryCodeFromPath(location.pathname) || "us"
 
-  const [selectedVariant, setSelectedVariant] = useState<HttpTypes.StoreProductVariant | undefined>(undefined)
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
   const [copied, setCopied] = useState(false)
-  
-  const handleVariantChange = useCallback((variant: HttpTypes.StoreProductVariant | undefined) => {
-    console.log("🔄 Variant changed:", variant?.title)
-    setSelectedVariant(variant)
+
+  const handleVariantChange = useCallback((_variant: HttpTypes.StoreProductVariant | undefined) => {
+    // Variant tracking available for future use
   }, [])
 
   const handleOptionsChange = useCallback((options: Record<string, string | undefined>) => {
-    console.log("🎛️ Options changed:", options)
     // Filter out undefined values
     const definedOptions = Object.entries(options).reduce((acc, [key, value]) => {
       if (value !== undefined) {
@@ -59,13 +55,13 @@ const ProductDetails = () => {
       })
       .catch(() => {
         // Fallback: create a temporary input to copy
-        const input = document.createElement('input')
+        const input = document.createElement("input")
         input.value = url
-        input.style.position = 'fixed'
-        input.style.opacity = '0'
+        input.style.position = "fixed"
+        input.style.opacity = "0"
         document.body.appendChild(input)
         input.select()
-        document.execCommand('copy')
+        document.execCommand("copy")
         document.body.removeChild(input)
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
@@ -74,8 +70,10 @@ const ProductDetails = () => {
 
   // Fetch related products (showing first 4 products as related)
   const { data: relatedProductsData } = useProducts({
-    fields: "id,title,handle,thumbnail,calculated_price",
-    queryParams: { limit: 5 },
+    query_params: {
+      limit: 5,
+      fields: "id,title,handle,thumbnail,*variants.calculated_price",
+    },
     region_id: region.id,
   })
 
@@ -93,7 +91,7 @@ const ProductDetails = () => {
     
     // Find the color option
     const colorOption = product.options?.find(
-      (opt) => opt.title.toLowerCase() === 'color'
+      (opt: HttpTypes.StoreProductOption) => opt.title.toLowerCase() === "color"
     )
     
     if (!colorOption) {
@@ -107,19 +105,19 @@ const ProductDetails = () => {
     }
 
     // Find variants that match the selected color
-    const matchingVariants = product.variants?.filter((variant) => {
+    const matchingVariants = product.variants?.filter((variant: HttpTypes.StoreProductVariant) => {
       return variant.options?.some(
-        (opt) => opt.option_id === colorOption.id && opt.value === selectedColorValue
+        (opt: HttpTypes.StoreProductOptionValue) => opt.option_id === colorOption.id && opt.value === selectedColorValue
       )
     }) || []
 
     // Get all image IDs from matching variants
     const variantImageIds = new Set(
-      matchingVariants.flatMap((v) => v.images?.map((img) => img.id) || [])
+      matchingVariants.flatMap((v: HttpTypes.StoreProductVariant) => v.images?.map((img: HttpTypes.StoreProductImage) => img.id) || [])
     )
 
-    const variantImages = allImages.filter((img) => variantImageIds.has(img.id))
-    const otherImages = allImages.filter((img) => !variantImageIds.has(img.id))
+    const variantImages = allImages.filter((img: HttpTypes.StoreProductImage) => variantImageIds.has(img.id))
+    const otherImages = allImages.filter((img: HttpTypes.StoreProductImage) => !variantImageIds.has(img.id))
 
     return [...variantImages, ...otherImages]
   }, [product.images, product.options, product.variants, selectedOptions])
@@ -194,7 +192,7 @@ const ProductDetails = () => {
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
-        <RelatedProducts products={relatedProducts} baseHref={baseHref} />
+        <RelatedProducts products={relatedProducts} countryCode={countryCode} />
       )}
     </>
   )
