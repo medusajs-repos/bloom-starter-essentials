@@ -2,7 +2,7 @@ import { ExecArgs } from "@medusajs/framework/types";
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import {
   batchVariantImagesWorkflow,
-  createApiKeysWorkflow,
+  createCollectionsWorkflow,
   createProductCategoriesWorkflow,
   createProductsWorkflow,
   createRegionsWorkflow,
@@ -12,13 +12,9 @@ import {
   createStockLocationsWorkflow,
   createTaxRegionsWorkflow,
   linkProductsToSalesChannelWorkflow,
-  linkSalesChannelsToApiKeyWorkflow,
   linkSalesChannelsToStockLocationWorkflow,
   updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows";
-import { ApiKey } from "../../.medusa/types/query-entry-points";
-
-const europeanCountries = ["de", "se", "fr", "es", "it"];
 
 export default async function seedDemoData({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
@@ -35,7 +31,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
 
   if (!defaultSalesChannel.length) {
-    // create the default sales channel
     const { result: salesChannelResult } = await createSalesChannelsWorkflow(
       container
     ).run({
@@ -47,87 +42,69 @@ export default async function seedDemoData({ container }: ExecArgs) {
         ],
       },
     });
-
     defaultSalesChannel = salesChannelResult;
   }
 
-  const { result: regions } = await createRegionsWorkflow(container).run({
-    input: {
-      regions: [
-        {
-          name: "United States",
-          currency_code: "usd",
-          countries: ["us"],
-        },
-        {
-          name: "Europe",
-          currency_code: "eur",
-          countries: europeanCountries,
-        },
-        {
-          name: "United Kingdom",
-          currency_code: "gbp",
-          countries: ["gb"],
-        },
-        {
-          name: "Denmark",
-          currency_code: "dkk",
-          countries: ["dk"],
-        },
-      ],
-    },
+  // Check if regions already exist
+  const { data: existingRegions } = await query.graph({
+    entity: "region",
+    fields: ["id", "name"],
   });
 
-  logger.info("Seeding publishable API key data...");
-  let publishableApiKey: ApiKey | null = null;
-  const { data } = await query.graph({
-    entity: "api_key",
-    fields: ["id"],
-    filters: {
-      type: "publishable",
-    },
-  });
-
-  publishableApiKey = data?.[0];
-
-  if (!publishableApiKey) {
-    const {
-      result: [publishableApiKeyResult],
-    } = await createApiKeysWorkflow(container).run({
-      input: {
-        api_keys: [
-          {
-            title: "Webshop",
-            type: "publishable",
-            created_by: "",
-          },
-        ],
-      },
-    });
-
-    publishableApiKey = publishableApiKeyResult as ApiKey;
+  if (existingRegions.length === 0) {
+    logger.info("Creating regions...");
+    const { result: regionResult } = await createRegionsWorkflow(container).run(
+      {
+        input: {
+          regions: [
+            {
+              name: "United States",
+              currency_code: "usd",
+              countries: ["us"],
+              payment_providers: ["pp_system_default"],
+              automatic_taxes: false,
+              is_tax_inclusive: false,
+            },
+            {
+              name: "Europe",
+              currency_code: "eur",
+              countries: ["de", "se", "fr", "es", "it"],
+              payment_providers: ["pp_system_default"],
+              automatic_taxes: true,
+              is_tax_inclusive: true,
+            },
+            {
+              name: "United Kingdom",
+              currency_code: "gbp",
+              countries: ["gb"],
+              payment_providers: ["pp_system_default"],
+              automatic_taxes: true,
+              is_tax_inclusive: true,
+            },
+            {
+              name: "Denmark",
+              currency_code: "dkk",
+              countries: ["dk"],
+              payment_providers: ["pp_system_default"],
+              automatic_taxes: true,
+              is_tax_inclusive: true,
+            },
+          ],
+        },
+      }
+    );
   }
 
-  // link publishable key to sales channel
-  await linkSalesChannelsToApiKeyWorkflow(container).run({
-    input: {
-      id: publishableApiKey.id,
-      add: [defaultSalesChannel[0].id],
-    },
-  });
-
-  // update the store with default settings
   await updateStoresWorkflow(container).run({
     input: {
       selector: { id: store.id },
       update: {
         supported_currencies: [
           { currency_code: "usd", is_default: true },
-          { currency_code: "eur" },
-          { currency_code: "gbp" },
-          { currency_code: "dkk" },
+          { currency_code: "eur", is_tax_inclusive: true },
+          { currency_code: "gbp", is_tax_inclusive: true },
+          { currency_code: "dkk", is_tax_inclusive: true },
         ],
-        default_region_id: regions[0].id,
         default_sales_channel_id: defaultSalesChannel[0].id,
       },
     },
@@ -136,15 +113,18 @@ export default async function seedDemoData({ container }: ExecArgs) {
   logger.info("Seeding tax regions...");
   const taxRates: Record<string, { rate: number; code: string; name: string }> =
     {
+      gb: { rate: 20, code: "GB20", name: "UK VAT" },
       de: { rate: 19, code: "DE19", name: "Germany VAT" },
+      dk: { rate: 25, code: "DK25", name: "Denmark VAT" },
       se: { rate: 25, code: "SE25", name: "Sweden VAT" },
       fr: { rate: 20, code: "FR20", name: "France VAT" },
       es: { rate: 21, code: "ES21", name: "Spain VAT" },
       it: { rate: 22, code: "IT22", name: "Italy VAT" },
     };
 
+  const taxRegionsToCreate = ["gb", "de", "dk", "se", "fr", "es", "it"];
   await createTaxRegionsWorkflow(container).run({
-    input: europeanCountries.map((country_code) => {
+    input: taxRegionsToCreate.map((country_code) => {
       const taxConfig = taxRates[country_code];
       return {
         country_code,
@@ -159,33 +139,45 @@ export default async function seedDemoData({ container }: ExecArgs) {
     }),
   });
 
-  logger.info("Seeding stock location data...");
-  const { result: stockLocationResult } = await createStockLocationsWorkflow(
-    container
-  ).run({
-    input: {
-      locations: [
-        {
-          name: "Main Warehouse",
-          address: {
-            city: "",
-            country_code: "US",
-            address_1: "",
-          },
-        },
-      ],
-    },
-  });
-  const stockLocation = stockLocationResult[0];
+  logger.info("Finished seeding tax regions.");
 
-  await link.create({
-    [Modules.STOCK_LOCATION]: {
-      stock_location_id: stockLocation.id,
-    },
-    [Modules.FULFILLMENT]: {
-      fulfillment_provider_id: "manual_manual",
-    },
+  logger.info("Seeding stock location data...");
+  const { data: existingStockLocations } = await query.graph({
+    entity: "stock_location",
+    fields: ["id", "name"],
   });
+
+  let stockLocation;
+  if (existingStockLocations.length === 0) {
+    const { result: stockLocationResult } = await createStockLocationsWorkflow(
+      container
+    ).run({
+      input: {
+        locations: [
+          {
+            name: "Main Warehouse",
+            address: {
+              city: "Copenhagen",
+              country_code: "DK",
+              address_1: "123 Main St",
+            },
+          },
+        ],
+      },
+    });
+    stockLocation = stockLocationResult[0];
+
+    await link.create({
+      [Modules.STOCK_LOCATION]: {
+        stock_location_id: stockLocation.id,
+      },
+      [Modules.FULFILLMENT]: {
+        fulfillment_provider_id: "manual_manual",
+      },
+    });
+  } else {
+    stockLocation = existingStockLocations[0];
+  }
 
   logger.info("Seeding fulfillment data...");
   const shippingProfiles = await fulfillmentModuleService.listShippingProfiles({
@@ -208,67 +200,91 @@ export default async function seedDemoData({ container }: ExecArgs) {
     shippingProfile = shippingProfileResult[0];
   }
 
-  const fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
-    name: "Main Warehouse Delivery",
-    type: "shipping",
-    service_zones: [
-      {
-        name: "Worldwide",
-        geo_zones: ["us", ...europeanCountries].map((country_code) => ({
-          country_code,
-          type: "country" as const,
-        })),
-      },
-    ],
-  });
+  const fulfillmentSets = await fulfillmentModuleService.listFulfillmentSets();
 
-  await link.create({
-    [Modules.STOCK_LOCATION]: {
-      stock_location_id: stockLocation.id,
-    },
-    [Modules.FULFILLMENT]: {
-      fulfillment_set_id: fulfillmentSet.id,
-    },
-  });
-
-  await createShippingOptionsWorkflow(container).run({
-    input: [
-      {
-        name: "Standard Worldwide Shipping",
-        price_type: "flat",
-        provider_id: "manual_manual",
-        service_zone_id: fulfillmentSet.service_zones[0].id,
-        shipping_profile_id: shippingProfile.id,
-        type: {
-          label: "Standard",
-          description: "Ships worldwide",
-          code: "standard-worldwide",
+  let fulfillmentSet;
+  if (fulfillmentSets.length === 0) {
+    fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
+      name: "Main Warehouse Delivery",
+      type: "shipping",
+      service_zones: [
+        {
+          name: "Worldwide",
+          geo_zones: ["us", "de", "se", "fr", "es", "it", "gb", "dk"].map(
+            (country_code) => ({
+              country_code,
+              type: "country" as const,
+            })
+          ),
         },
-        prices: [
-          {
-            currency_code: "usd",
-            amount: 10,
-          },
-          {
-            currency_code: "eur",
-            amount: 10,
-          },
-        ],
-        rules: [
-          {
-            attribute: "enabled_in_store",
-            value: "true",
-            operator: "eq",
-          },
-          {
-            attribute: "is_return",
-            value: "false",
-            operator: "eq",
-          },
-        ],
+      ],
+    });
+
+    await link.create({
+      [Modules.STOCK_LOCATION]: {
+        stock_location_id: stockLocation.id,
       },
-    ],
+      [Modules.FULFILLMENT]: {
+        fulfillment_set_id: fulfillmentSet.id,
+      },
+    });
+  } else {
+    fulfillmentSet = fulfillmentSets[0];
+  }
+
+  const { data: existingShippingOptions } = await query.graph({
+    entity: "shipping_option",
+    fields: ["id", "name"],
   });
+
+  if (existingShippingOptions.length === 0) {
+    await createShippingOptionsWorkflow(container).run({
+      input: [
+        {
+          name: "Standard Worldwide Shipping",
+          price_type: "flat",
+          provider_id: "manual_manual",
+          service_zone_id: fulfillmentSet.service_zones[0].id,
+          shipping_profile_id: shippingProfile.id,
+          type: {
+            label: "Standard",
+            description: "Ships worldwide",
+            code: "standard-worldwide",
+          },
+          prices: [
+            {
+              currency_code: "usd",
+              amount: 0,
+            },
+            {
+              currency_code: "eur",
+              amount: 0,
+            },
+            {
+              currency_code: "gbp",
+              amount: 0,
+            },
+            {
+              currency_code: "dkk",
+              amount: 0,
+            },
+          ],
+          rules: [
+            {
+              attribute: "enabled_in_store",
+              value: "true",
+              operator: "eq",
+            },
+            {
+              attribute: "is_return",
+              value: "false",
+              operator: "eq",
+            },
+          ],
+        },
+      ],
+    });
+  }
   logger.info("Finished seeding fulfillment data.");
 
   await linkSalesChannelsToStockLocationWorkflow(container).run({
@@ -279,16 +295,17 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
   logger.info("Finished seeding stock location data.");
 
-  // Seed product categories
+  // Seed product categories with nesting
   logger.info("Seeding product categories...");
   const { data: existingCategories } = await query.graph({
     entity: "product_category",
-    fields: ["id", "handle"],
+    fields: ["id", "handle", "name"],
   });
 
   const categoryHandles = existingCategories.map((c: any) => c.handle);
   const categoriesToCreate = [];
 
+  // Parent categories
   if (!categoryHandles.includes("tops")) {
     categoriesToCreate.push({
       name: "Tops",
@@ -305,78 +322,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
       is_internal: false,
     });
   }
-  if (!categoryHandles.includes("sweatshirts")) {
-    categoriesToCreate.push({
-      name: "Sweatshirts",
-      handle: "sweatshirts",
-      is_active: true,
-      is_internal: false,
-    });
-  }
-  if (!categoryHandles.includes("long-sleeves")) {
-    categoriesToCreate.push({
-      name: "Long Sleeves",
-      handle: "long-sleeves",
-      is_active: true,
-      is_internal: false,
-    });
-  }
-  if (!categoryHandles.includes("t-shirts")) {
-    categoriesToCreate.push({
-      name: "T-Shirts",
-      handle: "t-shirts",
-      is_active: true,
-      is_internal: false,
-    });
-  }
-  if (!categoryHandles.includes("bras")) {
-    categoriesToCreate.push({
-      name: "Bras",
-      handle: "bras",
-      is_active: true,
-      is_internal: false,
-    });
-  }
-  if (!categoryHandles.includes("jackets")) {
-    categoriesToCreate.push({
-      name: "Jackets",
-      handle: "jackets",
-      is_active: true,
-      is_internal: false,
-    });
-  }
-  if (!categoryHandles.includes("hoodies")) {
-    categoriesToCreate.push({
-      name: "Hoodies",
-      handle: "hoodies",
-      is_active: true,
-      is_internal: false,
-    });
-  }
-  if (!categoryHandles.includes("joggers")) {
-    categoriesToCreate.push({
-      name: "Joggers",
-      handle: "joggers",
-      is_active: true,
-      is_internal: false,
-    });
-  }
-  if (!categoryHandles.includes("leggings")) {
-    categoriesToCreate.push({
-      name: "Leggings",
-      handle: "leggings",
-      is_active: true,
-      is_internal: false,
-    });
-  }
-  if (!categoryHandles.includes("shorts")) {
-    categoriesToCreate.push({
-      name: "Shorts",
-      handle: "shorts",
-      is_active: true,
-      is_internal: false,
-    });
-  }
 
   if (categoriesToCreate.length > 0) {
     await createProductCategoriesWorkflow(container).run({
@@ -386,18 +331,176 @@ export default async function seedDemoData({ container }: ExecArgs) {
     });
   }
 
-  // Get category IDs
-  const { data: categories } = await query.graph({
+  // Get updated categories including newly created ones
+  const { data: allCategories } = await query.graph({
+    entity: "product_category",
+    fields: ["id", "handle", "name"],
+  });
+
+  // Create a map for easy lookup
+  const categoryMap: Record<string, any> = {};
+  allCategories.forEach((cat: any) => {
+    categoryMap[cat.handle] = cat;
+  });
+
+  // Create nested categories (children)
+  const nestedCategoriesToCreate = [];
+
+  // Under Tops
+  if (!categoryHandles.includes("sweatshirts") && categoryMap["tops"]) {
+    nestedCategoriesToCreate.push({
+      name: "Sweatshirts",
+      handle: "sweatshirts",
+      is_active: true,
+      is_internal: false,
+      parent_category_id: categoryMap["tops"].id,
+    });
+  }
+  if (!categoryHandles.includes("long-sleeves") && categoryMap["tops"]) {
+    nestedCategoriesToCreate.push({
+      name: "Long Sleeves",
+      handle: "long-sleeves",
+      is_active: true,
+      is_internal: false,
+      parent_category_id: categoryMap["tops"].id,
+    });
+  }
+  if (!categoryHandles.includes("t-shirts") && categoryMap["tops"]) {
+    nestedCategoriesToCreate.push({
+      name: "T-Shirts",
+      handle: "t-shirts",
+      is_active: true,
+      is_internal: false,
+      parent_category_id: categoryMap["tops"].id,
+    });
+  }
+  if (!categoryHandles.includes("bras") && categoryMap["tops"]) {
+    nestedCategoriesToCreate.push({
+      name: "Bras",
+      handle: "bras",
+      is_active: true,
+      is_internal: false,
+      parent_category_id: categoryMap["tops"].id,
+    });
+  }
+  if (!categoryHandles.includes("jackets") && categoryMap["tops"]) {
+    nestedCategoriesToCreate.push({
+      name: "Jackets",
+      handle: "jackets",
+      is_active: true,
+      is_internal: false,
+      parent_category_id: categoryMap["tops"].id,
+    });
+  }
+  if (!categoryHandles.includes("hoodies") && categoryMap["tops"]) {
+    nestedCategoriesToCreate.push({
+      name: "Hoodies",
+      handle: "hoodies",
+      is_active: true,
+      is_internal: false,
+      parent_category_id: categoryMap["tops"].id,
+    });
+  }
+
+  // Under Bottoms
+  if (!categoryHandles.includes("joggers") && categoryMap["bottoms"]) {
+    nestedCategoriesToCreate.push({
+      name: "Joggers",
+      handle: "joggers",
+      is_active: true,
+      is_internal: false,
+      parent_category_id: categoryMap["bottoms"].id,
+    });
+  }
+  if (!categoryHandles.includes("leggings") && categoryMap["bottoms"]) {
+    nestedCategoriesToCreate.push({
+      name: "Leggings",
+      handle: "leggings",
+      is_active: true,
+      is_internal: false,
+      parent_category_id: categoryMap["bottoms"].id,
+    });
+  }
+  if (!categoryHandles.includes("shorts") && categoryMap["bottoms"]) {
+    nestedCategoriesToCreate.push({
+      name: "Shorts",
+      handle: "shorts",
+      is_active: true,
+      is_internal: false,
+      parent_category_id: categoryMap["bottoms"].id,
+    });
+  }
+
+  if (nestedCategoriesToCreate.length > 0) {
+    await createProductCategoriesWorkflow(container).run({
+      input: {
+        product_categories: nestedCategoriesToCreate,
+      },
+    });
+  }
+
+  // Refresh categories after nesting
+  const { data: finalCategories } = await query.graph({
     entity: "product_category",
     fields: ["id", "handle"],
   });
 
   const getCategoryId = (handle: string) => {
-    const category = categories.find((c: any) => c.handle === handle);
+    const category = finalCategories.find((c: any) => c.handle === handle);
     return category ? category.id : null;
   };
 
   logger.info("Finished seeding product categories.");
+
+  // Seed product collections
+  logger.info("Seeding product collections...");
+  const { data: existingCollections } = await query.graph({
+    entity: "product_collection",
+    fields: ["id", "handle"],
+  });
+
+  const collectionHandles = existingCollections.map((c: any) => c.handle);
+  const collectionsToCreate = [];
+
+  if (!collectionHandles.includes("core-essentials")) {
+    collectionsToCreate.push({
+      title: "Core Essentials",
+      handle: "core-essentials",
+    });
+  }
+  if (!collectionHandles.includes("studio-training")) {
+    collectionsToCreate.push({
+      title: "Studio & Training",
+      handle: "studio-training",
+    });
+  }
+  if (!collectionHandles.includes("outer-layers")) {
+    collectionsToCreate.push({
+      title: "Outer Layers",
+      handle: "outer-layers",
+    });
+  }
+
+  if (collectionsToCreate.length > 0) {
+    await createCollectionsWorkflow(container).run({
+      input: {
+        collections: collectionsToCreate,
+      },
+    });
+  }
+
+  // Get collection IDs
+  const { data: collections } = await query.graph({
+    entity: "product_collection",
+    fields: ["id", "handle"],
+  });
+
+  const getCollectionId = (handle: string) => {
+    const collection = collections.find((c: any) => c.handle === handle);
+    return collection ? collection.id : null;
+  };
+
+  logger.info("Finished seeding product collections.");
 
   // Helper functions
   const getAllImages = (colorImages: Record<string, string[]>) => {
@@ -598,6 +701,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       category_ids: getCategoryId("sweatshirts")
         ? [getCategoryId("sweatshirts")!]
         : [],
+      collection_id: getCollectionId("core-essentials"),
       thumbnail: getFirstImage(crewneckSweatshirtImages),
       images: getAllImages(crewneckSweatshirtImages).map((url) => ({ url })),
       options: [
@@ -762,6 +866,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       is_giftcard: false,
       discountable: true,
       category_ids: getCategoryId("joggers") ? [getCategoryId("joggers")!] : [],
+      collection_id: getCollectionId("core-essentials"),
       thumbnail: getFirstImage(relaxedJoggerImages),
       images: getAllImages(relaxedJoggerImages).map((url) => ({ url })),
       options: [
@@ -832,6 +937,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       category_ids: getCategoryId("long-sleeves")
         ? [getCategoryId("long-sleeves")!]
         : [],
+      collection_id: getCollectionId("core-essentials"),
       thumbnail: getFirstImage(ribbedLongSleeveImages),
       images: getAllImages(ribbedLongSleeveImages).map((url) => ({ url })),
       options: [
@@ -950,6 +1056,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       category_ids: getCategoryId("t-shirts")
         ? [getCategoryId("t-shirts")!]
         : [],
+      collection_id: getCollectionId("core-essentials"),
       thumbnail: getFirstImage(minimalTeeImages),
       images: getAllImages(minimalTeeImages).map((url) => ({ url })),
       options: [
@@ -1114,6 +1221,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       is_giftcard: false,
       discountable: true,
       category_ids: getCategoryId("shorts") ? [getCategoryId("shorts")!] : [],
+      collection_id: getCollectionId("studio-training"),
       thumbnail: getFirstImage(lightweightTrainingShortImages),
       images: getAllImages(lightweightTrainingShortImages).map((url) => ({
         url,
@@ -1232,6 +1340,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       is_giftcard: false,
       discountable: true,
       category_ids: getCategoryId("bras") ? [getCategoryId("bras")!] : [],
+      collection_id: getCollectionId("studio-training"),
       thumbnail: getFirstImage(ribbedSportsBraImages),
       images: getAllImages(ribbedSportsBraImages).map((url) => ({ url })),
       options: [
@@ -1350,6 +1459,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       category_ids: getCategoryId("leggings")
         ? [getCategoryId("leggings")!]
         : [],
+      collection_id: getCollectionId("studio-training"),
       thumbnail: getFirstImage(performanceLeggingImages),
       images: getAllImages(performanceLeggingImages).map((url) => ({ url })),
       options: [
@@ -1465,6 +1575,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       is_giftcard: false,
       discountable: true,
       category_ids: getCategoryId("jackets") ? [getCategoryId("jackets")!] : [],
+      collection_id: getCollectionId("studio-training"),
       thumbnail: getFirstImage(studioZipJacketImages),
       images: getAllImages(studioZipJacketImages).map((url) => ({ url })),
       options: [
@@ -1581,6 +1692,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       is_giftcard: false,
       discountable: true,
       category_ids: getCategoryId("jackets") ? [getCategoryId("jackets")!] : [],
+      collection_id: getCollectionId("outer-layers"),
       thumbnail: getFirstImage(movementWindbreakerImages),
       images: getAllImages(movementWindbreakerImages).map((url) => ({ url })),
       options: [
@@ -1696,6 +1808,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       is_giftcard: false,
       discountable: true,
       category_ids: getCategoryId("hoodies") ? [getCategoryId("hoodies")!] : [],
+      collection_id: getCollectionId("outer-layers"),
       thumbnail: getFirstImage(travelHoodieImages),
       images: getAllImages(travelHoodieImages).map((url) => ({ url })),
       options: [
@@ -1764,6 +1877,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       is_giftcard: false,
       discountable: true,
       category_ids: getCategoryId("jackets") ? [getCategoryId("jackets")!] : [],
+      collection_id: getCollectionId("outer-layers"),
       thumbnail: getFirstImage(quiltedRecoveryVestImages),
       images: getAllImages(quiltedRecoveryVestImages).map((url) => ({ url })),
       options: [
@@ -1832,6 +1946,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       is_giftcard: false,
       discountable: true,
       category_ids: getCategoryId("jackets") ? [getCategoryId("jackets")!] : [],
+      collection_id: getCollectionId("outer-layers"),
       thumbnail: getFirstImage(warmUpOvershirtImages),
       images: getAllImages(warmUpOvershirtImages).map((url) => ({ url })),
       options: [
