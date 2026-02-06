@@ -1,8 +1,5 @@
 import { ExecArgs } from "@medusajs/framework/types";
-import {
-  ContainerRegistrationKeys,
-  Modules,
-} from "@medusajs/framework/utils";
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import {
   batchVariantImagesWorkflow,
   createApiKeysWorkflow,
@@ -19,6 +16,9 @@ import {
   linkSalesChannelsToStockLocationWorkflow,
   updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows";
+import { ApiKey } from "../../.medusa/types/query-entry-points";
+
+const europeanCountries = ["de", "se", "fr", "es", "it"];
 
 export default async function seedDemoData({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
@@ -27,8 +27,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
   const salesChannelModuleService = container.resolve(Modules.SALES_CHANNEL);
   const storeModuleService = container.resolve(Modules.STORE);
   const query = container.resolve(ContainerRegistrationKeys.QUERY);
-
-  const europeanCountries = ["gb", "de", "dk", "se", "fr", "es", "it"];
 
   logger.info("Seeding store data...");
   const [store] = await storeModuleService.listStores();
@@ -80,24 +78,40 @@ export default async function seedDemoData({ container }: ExecArgs) {
     },
   });
 
-  // create publishable keys
-  const { result: publishableKey } = await createApiKeysWorkflow(
-    container
-  ).run({
-    input: {
-      api_keys: [
-        {
-          title: "Development",
-          type: "publishable",
-        },
-      ],
+  logger.info("Seeding publishable API key data...");
+  let publishableApiKey: ApiKey | null = null;
+  const { data } = await query.graph({
+    entity: "api_key",
+    fields: ["id"],
+    filters: {
+      type: "publishable",
     },
   });
+
+  publishableApiKey = data?.[0];
+
+  if (!publishableApiKey) {
+    const {
+      result: [publishableApiKeyResult],
+    } = await createApiKeysWorkflow(container).run({
+      input: {
+        api_keys: [
+          {
+            title: "Webshop",
+            type: "publishable",
+            created_by: "",
+          },
+        ],
+      },
+    });
+
+    publishableApiKey = publishableApiKeyResult as ApiKey;
+  }
 
   // link publishable key to sales channel
   await linkSalesChannelsToApiKeyWorkflow(container).run({
     input: {
-      id: publishableKey[0].id,
+      id: publishableApiKey.id,
       add: [defaultSalesChannel[0].id],
     },
   });
@@ -119,14 +133,34 @@ export default async function seedDemoData({ container }: ExecArgs) {
     },
   });
 
+  logger.info("Seeding tax regions...");
+  const taxRates: Record<string, { rate: number; code: string; name: string }> =
+    {
+      de: { rate: 19, code: "DE19", name: "Germany VAT" },
+      se: { rate: 25, code: "SE25", name: "Sweden VAT" },
+      fr: { rate: 20, code: "FR20", name: "France VAT" },
+      es: { rate: 21, code: "ES21", name: "Spain VAT" },
+      it: { rate: 22, code: "IT22", name: "Italy VAT" },
+    };
+
   await createTaxRegionsWorkflow(container).run({
-    input: regions.map((region: any) => ({
-      country_code: region.countries.map((c: any) => c.iso_2)[0],
-    })),
+    input: europeanCountries.map((country_code) => {
+      const taxConfig = taxRates[country_code];
+      return {
+        country_code,
+        provider_id: "tp_system",
+        default_tax_rate: {
+          rate: taxConfig.rate,
+          code: taxConfig.code,
+          name: taxConfig.name,
+          is_default: true,
+        },
+      };
+    }),
   });
 
-  // default location
-  const { result: stockLocations } = await createStockLocationsWorkflow(
+  logger.info("Seeding stock location data...");
+  const { result: stockLocationResult } = await createStockLocationsWorkflow(
     container
   ).run({
     input: {
@@ -134,69 +168,116 @@ export default async function seedDemoData({ container }: ExecArgs) {
         {
           name: "Main Warehouse",
           address: {
-            city: "Copenhagen",
-            country_code: "dk",
-            address_1: "123 Main St",
+            city: "",
+            country_code: "US",
+            address_1: "",
           },
         },
       ],
     },
   });
+  const stockLocation = stockLocationResult[0];
+
+  await link.create({
+    [Modules.STOCK_LOCATION]: {
+      stock_location_id: stockLocation.id,
+    },
+    [Modules.FULFILLMENT]: {
+      fulfillment_provider_id: "manual_manual",
+    },
+  });
+
+  logger.info("Seeding fulfillment data...");
+  const shippingProfiles = await fulfillmentModuleService.listShippingProfiles({
+    type: "default",
+  });
+  let shippingProfile = shippingProfiles.length ? shippingProfiles[0] : null;
+
+  if (!shippingProfile) {
+    const { result: shippingProfileResult } =
+      await createShippingProfilesWorkflow(container).run({
+        input: {
+          data: [
+            {
+              name: "Default Shipping Profile",
+              type: "default",
+            },
+          ],
+        },
+      });
+    shippingProfile = shippingProfileResult[0];
+  }
+
+  const fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
+    name: "Main Warehouse Delivery",
+    type: "shipping",
+    service_zones: [
+      {
+        name: "Worldwide",
+        geo_zones: ["us", ...europeanCountries].map((country_code) => ({
+          country_code,
+          type: "country" as const,
+        })),
+      },
+    ],
+  });
+
+  await link.create({
+    [Modules.STOCK_LOCATION]: {
+      stock_location_id: stockLocation.id,
+    },
+    [Modules.FULFILLMENT]: {
+      fulfillment_set_id: fulfillmentSet.id,
+    },
+  });
+
+  await createShippingOptionsWorkflow(container).run({
+    input: [
+      {
+        name: "Standard Worldwide Shipping",
+        price_type: "flat",
+        provider_id: "manual_manual",
+        service_zone_id: fulfillmentSet.service_zones[0].id,
+        shipping_profile_id: shippingProfile.id,
+        type: {
+          label: "Standard",
+          description: "Ships worldwide",
+          code: "standard-worldwide",
+        },
+        prices: [
+          {
+            currency_code: "usd",
+            amount: 10,
+          },
+          {
+            currency_code: "eur",
+            amount: 10,
+          },
+        ],
+        rules: [
+          {
+            attribute: "enabled_in_store",
+            value: "true",
+            operator: "eq",
+          },
+          {
+            attribute: "is_return",
+            value: "false",
+            operator: "eq",
+          },
+        ],
+      },
+    ],
+  });
+  logger.info("Finished seeding fulfillment data.");
 
   await linkSalesChannelsToStockLocationWorkflow(container).run({
     input: {
-      id: stockLocations[0].id,
+      id: stockLocation.id,
       add: [defaultSalesChannel[0].id],
     },
   });
-
-  const fulfillmentSets =
-    await fulfillmentModuleService.listFulfillmentSets();
-
-  // Create shipping profile
-  const { result: shippingProfiles } = await createShippingProfilesWorkflow(
-    container
-  ).run({
-    input: {
-      data: [
-        {
-          name: "Default",
-          type: "default",
-        },
-      ],
-    },
-  });
-
-  // Create shipping options for each region
-  await createShippingOptionsWorkflow(container).run({
-    input: regions.map((region: any, index: number) => ({
-      name: "Standard Shipping",
-      price_type: "flat",
-      service_zone_id: fulfillmentSets[0].service_zones[0].id,
-      shipping_profile_id: shippingProfiles[0].id,
-      provider_id: "manual_manual",
-      type: {
-        label: "Standard",
-        description: "Standard shipping",
-        code: "standard",
-      },
-      prices: [
-        {
-          currency_code: region.currency_code,
-          amount: 10,
-        },
-      ],
-      rules: [
-        {
-          attribute: "customer_group",
-          operator: "eq",
-          value: "VIP",
-        },
-      ],
-    })),
-  });
-
-  logger.info("Finished seeding regions and locations...");
+  logger.info("Finished seeding stock location data.");
 
   // Seed product categories
   logger.info("Seeding product categories...");
@@ -680,9 +761,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       status: "published" as const,
       is_giftcard: false,
       discountable: true,
-      category_ids: getCategoryId("joggers")
-        ? [getCategoryId("joggers")!]
-        : [],
+      category_ids: getCategoryId("joggers") ? [getCategoryId("joggers")!] : [],
       thumbnail: getFirstImage(relaxedJoggerImages),
       images: getAllImages(relaxedJoggerImages).map((url) => ({ url })),
       options: [
@@ -1381,14 +1460,11 @@ export default async function seedDemoData({ container }: ExecArgs) {
       title: "Studio Zip Jacket",
       handle: "studio-zip-jacket",
       subtitle: null,
-      description:
-        "Streamlined zip layer designed for warmups and cool-downs.",
+      description: "Streamlined zip layer designed for warmups and cool-downs.",
       status: "published" as const,
       is_giftcard: false,
       discountable: true,
-      category_ids: getCategoryId("jackets")
-        ? [getCategoryId("jackets")!]
-        : [],
+      category_ids: getCategoryId("jackets") ? [getCategoryId("jackets")!] : [],
       thumbnail: getFirstImage(studioZipJacketImages),
       images: getAllImages(studioZipJacketImages).map((url) => ({ url })),
       options: [
@@ -1504,9 +1580,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       status: "published" as const,
       is_giftcard: false,
       discountable: true,
-      category_ids: getCategoryId("jackets")
-        ? [getCategoryId("jackets")!]
-        : [],
+      category_ids: getCategoryId("jackets") ? [getCategoryId("jackets")!] : [],
       thumbnail: getFirstImage(movementWindbreakerImages),
       images: getAllImages(movementWindbreakerImages).map((url) => ({ url })),
       options: [
@@ -1621,9 +1695,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       status: "published" as const,
       is_giftcard: false,
       discountable: true,
-      category_ids: getCategoryId("hoodies")
-        ? [getCategoryId("hoodies")!]
-        : [],
+      category_ids: getCategoryId("hoodies") ? [getCategoryId("hoodies")!] : [],
       thumbnail: getFirstImage(travelHoodieImages),
       images: getAllImages(travelHoodieImages).map((url) => ({ url })),
       options: [
@@ -1691,9 +1763,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       status: "published" as const,
       is_giftcard: false,
       discountable: true,
-      category_ids: getCategoryId("jackets")
-        ? [getCategoryId("jackets")!]
-        : [],
+      category_ids: getCategoryId("jackets") ? [getCategoryId("jackets")!] : [],
       thumbnail: getFirstImage(quiltedRecoveryVestImages),
       images: getAllImages(quiltedRecoveryVestImages).map((url) => ({ url })),
       options: [
@@ -1761,9 +1831,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       status: "published" as const,
       is_giftcard: false,
       discountable: true,
-      category_ids: getCategoryId("jackets")
-        ? [getCategoryId("jackets")!]
-        : [],
+      category_ids: getCategoryId("jackets") ? [getCategoryId("jackets")!] : [],
       thumbnail: getFirstImage(warmUpOvershirtImages),
       images: getAllImages(warmUpOvershirtImages).map((url) => ({ url })),
       options: [
