@@ -1,4 +1,8 @@
-import { ExecArgs } from "@medusajs/framework/types";
+import {
+  CreateProductCategoryDTO,
+  CreateProductCollectionDTO,
+  ExecArgs,
+} from "@medusajs/framework/types";
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import {
   batchVariantImagesWorkflow,
@@ -303,7 +307,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
 
   const categoryHandles = existingCategories.map((c: any) => c.handle);
-  const categoriesToCreate = [];
+  const categoriesToCreate: CreateProductCategoryDTO[] = [];
 
   // Parent categories
   if (!categoryHandles.includes("tops")) {
@@ -344,7 +348,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
 
   // Create nested categories (children)
-  const nestedCategoriesToCreate = [];
+  const nestedCategoriesToCreate: CreateProductCategoryDTO[] = [];
 
   // Under Tops
   if (!categoryHandles.includes("sweatshirts") && categoryMap["tops"]) {
@@ -460,7 +464,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
 
   const collectionHandles = existingCollections.map((c: any) => c.handle);
-  const collectionsToCreate = [];
+  const collectionsToCreate: CreateProductCollectionDTO[] = [];
 
   if (!collectionHandles.includes("core-essentials")) {
     collectionsToCreate.push({
@@ -497,7 +501,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   const getCollectionId = (handle: string) => {
     const collection = collections.find((c: any) => c.handle === handle);
-    return collection ? collection.id : null;
+    return collection ? collection.id : undefined;
   };
 
   logger.info("Finished seeding product collections.");
@@ -692,7 +696,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     {
       title: "Crewneck Sweatshirt",
       handle: "crewneck-sweatshirt",
-      subtitle: null,
+      subtitle: "Crewneck sweatshirt",
       description:
         "A heavyweight crewneck designed for everyday comfort with a structured, premium feel.",
       status: "published" as const,
@@ -859,7 +863,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     {
       title: "Relaxed Jogger Pant",
       handle: "relaxed-jogger-pant",
-      subtitle: null,
+      subtitle: "Relaxed jogger pant",
       description:
         "Minimalist joggers with a tailored silhouette—ideal for travel or downtime.",
       status: "published" as const,
@@ -928,7 +932,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     {
       title: "Ribbed Long Sleeve Top",
       handle: "ribbed-long-sleeve-top",
-      subtitle: null,
+      subtitle: "Ribbed long sleeve top",
       description:
         "A refined layering piece with subtle rib texture and stretch.",
       status: "published" as const,
@@ -1047,7 +1051,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     {
       title: "Minimal Tee",
       handle: "minimal-tee",
-      subtitle: null,
+      subtitle: "Minimal tee",
       description:
         "Ultra-soft everyday tee with a clean neckline and athletic drape.",
       status: "published" as const,
@@ -1214,7 +1218,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     {
       title: "Lightweight Training Short",
       handle: "lightweight-training-short",
-      subtitle: null,
+      subtitle: "Lightweight training short",
       description:
         "Breathable short with a clean waistband and built-in liner.",
       status: "published" as const,
@@ -1333,7 +1337,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     {
       title: "Ribbed Sports Bra",
       handle: "ribbed-sports-bra",
-      subtitle: null,
+      subtitle: "Ribbed sports bra",
       description:
         "Medium-support bra with minimalist seams and soft compression.",
       status: "published" as const,
@@ -1450,7 +1454,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     {
       title: "Performance Legging",
       handle: "performance-legging",
-      subtitle: null,
+      subtitle: "Performance legging",
       description:
         "Sculpting high-rise leggings built for studio training and daily movement.",
       status: "published" as const,
@@ -1569,7 +1573,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     {
       title: "Studio Zip Jacket",
       handle: "studio-zip-jacket",
-      subtitle: null,
+      subtitle: "Studio zip jacket",
       description: "Streamlined zip layer designed for warmups and cool-downs.",
       status: "published" as const,
       is_giftcard: false,
@@ -1685,7 +1689,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     {
       title: "Movement Windbreaker",
       handle: "movement-windbreaker",
-      subtitle: null,
+      subtitle: "Movement windbreaker",
       description:
         "Featherlight outer shell for transitional weather and urban movement.",
       status: "published" as const,
@@ -1802,7 +1806,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     {
       title: "Travel Hoodie",
       handle: "travel-hoodie",
-      subtitle: null,
+      subtitle: "Travel hoodie",
       description: "Elevated hoodie with clean lines and premium weight.",
       status: "published" as const,
       is_giftcard: false,
@@ -1870,7 +1874,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     {
       title: "Quilted Recovery Vest",
       handle: "quilted-recovery-vest",
-      subtitle: null,
+      subtitle: "Quilted recovery vest",
       description:
         "Minimal insulated vest designed for layering post-training.",
       status: "published" as const,
@@ -1939,7 +1943,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     {
       title: "Warm-Up Overshirt",
       handle: "warm-up-overshirt",
-      subtitle: null,
+      subtitle: "Warm-up overshirt jacket",
       description:
         "A structured overshirt jacket blending utility and comfort.",
       status: "published" as const,
