@@ -56,6 +56,7 @@ module.exports = defineConfig({
                   endpoint: process.env.R2_ENDPOINT,
                   access_key_id: process.env.R2_ACCESS_KEY_ID,
                   secret_access_key: process.env.R2_SECRET_ACCESS_KEY,
+                  session_token: process.env.R2_SESSION_TOKEN,
                   region: "auto",
                   additional_client_config: {
                     forcePathStyle: false,
