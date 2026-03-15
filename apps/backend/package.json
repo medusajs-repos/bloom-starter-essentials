@@ -20,7 +20,8 @@
     "dev:tee": "medusa develop 2>&1 | tee -a ../backend.log",
     "test:integration:http": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
     "test:integration:modules": "TEST_TYPE=integration:modules NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit",
-    "test:unit": "TEST_TYPE=unit NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit"
+    "test:unit": "TEST_TYPE=unit NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit",
+    "email:dev": "email-preview --dir ./src/email-templates --port 9004 --hostname 0.0.0.0"
   },
   "dependencies": {
     "@medusajs/admin-sdk": "2.13.3",
@@ -28,12 +29,15 @@
     "@medusajs/cli": "2.13.3",
     "@medusajs/dashboard": "2.13.3",
     "@medusajs/draft-order": "2.13.3",
+    "@medusajs/email-preview-server": "^0.0.9",
     "@medusajs/framework": "2.13.3",
     "@medusajs/icons": "^2.13.3",
     "@medusajs/js-sdk": "2.13.3",
     "@medusajs/medusa": "2.13.3",
     "@medusajs/types": "2.13.3",
     "@medusajs/ui": "4.1.0",
+    "@react-email/components": "^1.0.9",
+    "@react-email/render": "^2.0.4",
     "@tanstack/react-query": "5.64.2"
   },
   "devDependencies": {
