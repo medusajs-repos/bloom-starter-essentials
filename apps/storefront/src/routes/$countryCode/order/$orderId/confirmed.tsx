@@ -2,6 +2,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router"
 import OrderConfirmationPage from "@/pages/order-confirmation"
 import { retrieveOrder } from "@/lib/data/order"
 import { queryKeys } from "@/lib/utils/query-keys"
+import { sanitize } from "@/lib/utils/sanitize"
 
 export const Route = createFileRoute("/$countryCode/order/$orderId/confirmed")({
   loader: async ({ params, context }) => {
@@ -20,10 +21,10 @@ export const Route = createFileRoute("/$countryCode/order/$orderId/confirmed")({
       throw notFound()
     }
 
-    return {
+    return sanitize({
       countryCode,
       order,
-    }
+    })
   },
   component: OrderConfirmationPage,
 })

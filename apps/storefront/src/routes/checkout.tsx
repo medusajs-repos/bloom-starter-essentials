@@ -1,4 +1,5 @@
 import { getStoredCountryCode } from "@/lib/data/country-code"
+import { CheckoutStepKey } from "@/lib/types/global"
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/checkout")({
@@ -7,7 +8,7 @@ export const Route = createFileRoute("/checkout")({
 
     throw redirect({
       to: "/$countryCode/checkout",
-      search: { step: "addresses" },
+      search: { step: CheckoutStepKey.ADDRESSES },
       params: { countryCode },
     })
   },

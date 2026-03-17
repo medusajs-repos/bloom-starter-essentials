@@ -4,6 +4,7 @@ import { getRegion } from "@/lib/data/regions"
 import { getBestSellingProductIds } from "@/lib/data/products"
 import Category from "@/pages/category"
 import { HttpTypes } from "@medusajs/types"
+import { sanitize } from "@/lib/utils/sanitize"
 
 export const Route = createFileRoute("/$countryCode/categories/$handle")({
   loader: async ({ params, context }) => {
@@ -35,12 +36,12 @@ export const Route = createFileRoute("/$countryCode/categories/$handle")({
     // Fetch best-selling product IDs for sorting
     const bestSellingIds = await getBestSellingProductIds()
 
-    return {
+    return sanitize({
       countryCode,
       region,
       category: category as HttpTypes.StoreProductCategory,
       bestSellingIds,
-    }
+    })
   },
   head: ({ loaderData }) => {
     const { region, countryCode, category } =

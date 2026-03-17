@@ -3,6 +3,7 @@ import { sdk } from "@/lib/utils/sdk"
 import { formatPrice } from "@/lib/utils/price"
 import { ArrowLeft } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
+import { sanitize } from "@/lib/utils/sanitize"
 
 export const Route = createFileRoute("/$countryCode/account/orders/$orderId")({
   component: OrderDetail,
@@ -26,7 +27,7 @@ export const Route = createFileRoute("/$countryCode/account/orders/$orderId")({
     const { order } = await sdk.store.order.retrieve(params.orderId, {
       fields: "*items,*items.variant,*items.product,*shipping_address,*billing_address,*fulfillments",
     })
-    return { order }
+    return sanitize({ order })
   },
 })
 

@@ -66,7 +66,7 @@ function OrdersPage() {
                     <div>
                       <p className="font-semibold">Order #{order.display_id}</p>
                       <p className="text-sm text-neutral-600">
-                        {formatDate(order.created_at)}
+                        {formatDate(String(order.created_at))}
                       </p>
                     </div>
                     <p className="font-bold">

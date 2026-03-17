@@ -3,6 +3,7 @@ import { Collection } from "@/pages/collection"
 import { getRegion } from "@/lib/data/regions"
 import { sdk } from "@/lib/utils/sdk"
 import { getBestSellingProductIds } from "@/lib/data/products"
+import { sanitize } from "@/lib/utils/sanitize"
 
 export const Route = createFileRoute("/$countryCode/collections/$handle")({
   loader: async ({ params }) => {
@@ -27,11 +28,11 @@ export const Route = createFileRoute("/$countryCode/collections/$handle")({
     // Get best selling product IDs
     const bestSellingIds = await getBestSellingProductIds()
 
-    return {
+    return sanitize({
       collection,
       region,
       bestSellingIds,
-    }
+    })
   },
   head: ({ loaderData }) => {
     const collection = loaderData?.collection
