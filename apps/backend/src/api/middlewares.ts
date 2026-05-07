@@ -1,4 +1,4 @@
-import { 
+import {
   defineMiddlewares
 } from "@medusajs/framework/http"
 import path from "path"
