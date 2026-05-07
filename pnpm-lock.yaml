@@ -37,8 +37,8 @@ importers:
         specifier: 2.14.2
         version: 2.14.2(@medusajs/admin-sdk@2.14.2)(@medusajs/cli@2.14.2(@types/node@20.0.0))(@medusajs/framework@2.14.2(@medusajs/cli@2.14.2(@types/node@20.0.0))(@types/node@20.0.0)(ioredis@5.8.2)(vite@5.2.11(@types/node@20.0.0)(lightningcss@1.30.2)(terser@5.44.0))(zod@4.2.0))(@medusajs/icons@2.14.2(react@19.1.1))(@medusajs/test-utils@2.14.2)(@medusajs/ui@4.1.9(@types/react-dom@19.1.1(@types/react@19.1.1))(@types/react@19.1.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.8.3))(@types/react-dom@19.1.1(@types/react@19.1.1))(@types/react@19.1.1)(react-dom@19.1.1(react@19.1.1))(react-router-dom@6.30.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@medusajs/email-preview-server':
-        specifier: ^0.0.9
-        version: 0.0.9(@opentelemetry/api@1.9.0)(@react-email/render@2.0.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/react-dom@19.1.1(@types/react@19.1.1))(@types/react@19.1.1)(typescript@5.8.3)
+        specifier: ^0.0.10
+        version: 0.0.10(@opentelemetry/api@1.9.0)(@react-email/render@2.0.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/react-dom@19.1.1(@types/react@19.1.1))(@types/react@19.1.1)(typescript@5.8.3)
       '@medusajs/framework':
         specifier: 2.14.2
         version: 2.14.2(@medusajs/cli@2.14.2(@types/node@20.0.0))(@types/node@20.0.0)(ioredis@5.8.2)(vite@5.2.11(@types/node@20.0.0)(lightningcss@1.30.2)(terser@5.44.0))(zod@4.2.0)
@@ -784,9 +784,6 @@ packages:
 
   '@emnapi/core@1.6.0':
     resolution: {integrity: sha512-zq/ay+9fNIJJtJiZxdTnXS20PllcYMX3OE23ESc4HK/bdYu3cOWYVhsOhVnXALfU/uqJIxn5NBPd9z4v+SfoSg==}
-
-  '@emnapi/runtime@1.6.0':
-    resolution: {integrity: sha512-obtUmAHTMjll499P+D9A3axeJFlhdjOWdKUNs/U6QIGT7V5RjcUW1xToAzjvmgTSQhDbYn/NwfTRoJcQ2rNBxA==}
 
   '@emnapi/runtime@1.9.0':
     resolution: {integrity: sha512-QN75eB0IH2ywSpRpNddCRfQIhmJYBCJ1x5Lb3IscKAL8bMnVAKnRg8dCoXbHzVLLH7P38N2Z3mtulB7W0J0FKw==}
@@ -2032,8 +2029,8 @@ packages:
       react-router-dom:
         optional: true
 
-  '@medusajs/email-preview-server@0.0.9':
-    resolution: {integrity: sha512-UbosX3NSh5/N63O4zR8ONGKaQ2+vjUxClezVRG5dmTxWwhKMIhfmACXsuxlo+MFrtJFs5pupHbqwDMkzhDcHSA==}
+  '@medusajs/email-preview-server@0.0.10':
+    resolution: {integrity: sha512-lOlgs7pkh6DLHuGST69hggaYTg+h9k63qkhw+255OzkjQmzRoC0S5mMhXVh9u/lZmcpqH+p2VoZMuY3op3YJxg==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -4314,6 +4311,7 @@ packages:
   '@react-email/html@0.0.12':
     resolution: {integrity: sha512-KTShZesan+UsreU7PDUV90afrZwU5TLwYlALuCSU0OT+/U8lULNNbAUekg+tGwCnOfIKYtpDPKkAMRdYlqUznw==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: 19.1.1
 
@@ -11127,11 +11125,6 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
-  '@emnapi/runtime@1.6.0':
-    dependencies:
-      tslib: 2.8.1
-    optional: true
-
   '@emnapi/runtime@1.9.0':
     dependencies:
       tslib: 2.8.1
@@ -12373,7 +12366,7 @@ snapshots:
       - '@types/react'
       - '@types/react-dom'
 
-  '@medusajs/email-preview-server@0.0.9(@opentelemetry/api@1.9.0)(@react-email/render@2.0.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/react-dom@19.1.1(@types/react@19.1.1))(@types/react@19.1.1)(typescript@5.8.3)':
+  '@medusajs/email-preview-server@0.0.10(@opentelemetry/api@1.9.0)(@react-email/render@2.0.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@types/react-dom@19.1.1(@types/react@19.1.1))(@types/react@19.1.1)(typescript@5.8.3)':
     dependencies:
       '@babel/core': 7.26.10
       '@babel/parser': 7.27.0
@@ -13059,7 +13052,7 @@ snapshots:
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
       '@emnapi/core': 1.6.0
-      '@emnapi/runtime': 1.6.0
+      '@emnapi/runtime': 1.9.0
       '@tybys/wasm-util': 0.10.1
     optional: true
 

@@ -29,7 +29,7 @@
     "@medusajs/cli": "2.14.2",
     "@medusajs/dashboard": "2.14.2",
     "@medusajs/draft-order": "2.14.2",
-    "@medusajs/email-preview-server": "^0.0.9",
+    "@medusajs/email-preview-server": "^0.0.10",
     "@medusajs/framework": "2.14.2",
     "@medusajs/icons": "^2.14.2",
     "@medusajs/js-sdk": "2.14.2",
