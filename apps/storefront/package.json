@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@medusajs/icons": "2.15.1",
-    "@medusajs/js-sdk": "2.15.1",
+    "@medusajs/icons": "2.15.2",
+    "@medusajs/js-sdk": "2.15.2",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-navigation-menu": "^1.2.14",
@@ -33,7 +33,7 @@
   "devDependencies": {
     "@eslint/js": "9.33.0",
     "@medusajs-ai/tags": "next",
-    "@medusajs/types": "2.15.1",
+    "@medusajs/types": "2.15.2",
     "@tailwindcss/vite": "4.1.4",
     "@tanstack/react-router-devtools": "^1.144.0",
     "@types/lodash-es": "4.17.12",
