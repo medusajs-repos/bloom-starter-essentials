@@ -9,6 +9,7 @@ import {
     createCollectionsWorkflow,
     createDefaultsWorkflow,
     createProductCategoriesWorkflow,
+    createProductOptionsWorkflow,
     createProductsWorkflow,
     createRegionsWorkflow,
     createShippingOptionsWorkflow,
@@ -718,6 +719,72 @@ export default async function migration_25022026_initial_seed({
 
     const existingHandles = existingProducts.map((p: any) => p.handle);
 
+    // Look up existing global product options (idempotency for re-runs).
+    const { data: existingProductOptions } = await query.graph({
+        entity: "product_option",
+        fields: ["id", "title", "is_exclusive", "values.id", "values.value"],
+        filters: { is_exclusive: false } as any,
+    });
+
+    const optionTitlesToCreate: { title: string; values: string[] }[] = [
+        {
+            title: "Color",
+            values: [
+                "Sand",
+                "Charcoal",
+                "Olive",
+                "White",
+                "Black",
+                "Grey",
+                "Off-White",
+            ],
+        },
+        { title: "Size", values: ["S", "M", "L", "XL"] },
+    ];
+
+    const missingOptions = optionTitlesToCreate.filter(
+        (o) => !existingProductOptions.find((eo: any) => eo.title === o.title)
+    );
+
+    if (missingOptions.length > 0) {
+        await createProductOptionsWorkflow(container).run({
+            input: { product_options: missingOptions },
+        });
+    }
+
+    const { data: globalProductOptions } = await query.graph({
+        entity: "product_option",
+        fields: ["id", "title", "is_exclusive", "values.id", "values.value"],
+        filters: { is_exclusive: false } as any,
+    });
+
+    const optionByTitle: Record<
+        string,
+        { id: string; values: { id: string; value: string }[] }
+    > = {};
+    globalProductOptions.forEach((o: any) => {
+        optionByTitle[o.title] = { id: o.id, values: o.values || [] };
+    });
+
+    const colorOption = optionByTitle["Color"];
+    const sizeOption = optionByTitle["Size"];
+
+    const valueId = (
+        opt: { values: { id: string; value: string }[] },
+        value: string
+    ) => opt.values.find((v) => v.value === value)?.id as string;
+
+    const buildOptions = (colors: string[], sizes: string[]) => [
+        {
+            id: colorOption.id,
+            value_ids: colors.map((c) => valueId(colorOption, c)).filter(Boolean),
+        },
+        {
+            id: sizeOption.id,
+            value_ids: sizes.map((s) => valueId(sizeOption, s)).filter(Boolean),
+        },
+    ];
+
     const productsToCreate = [
         {
             title: "Crewneck Sweatshirt",
@@ -734,10 +801,7 @@ export default async function migration_25022026_initial_seed({
             collection_id: getCollectionId("core-essentials"),
             thumbnail: getFirstImage(crewneckSweatshirtImages),
             images: getAllImages(crewneckSweatshirtImages).map((url) => ({ url })),
-            options: [
-                { title: "Color", values: ["Sand", "Charcoal", "Olive"] },
-                { title: "Size", values: ["S", "M", "L", "XL"] },
-            ],
+            options: buildOptions(["Sand", "Charcoal", "Olive"], ["S", "M", "L", "XL"]),
             variants: [
                 {
                     title: "S / Sand",
@@ -899,10 +963,7 @@ export default async function migration_25022026_initial_seed({
             collection_id: getCollectionId("core-essentials"),
             thumbnail: getFirstImage(relaxedJoggerImages),
             images: getAllImages(relaxedJoggerImages).map((url) => ({ url })),
-            options: [
-                { title: "Color", values: ["Charcoal"] },
-                { title: "Size", values: ["S", "M", "L", "XL"] },
-            ],
+            options: buildOptions(["Charcoal"], ["S", "M", "L", "XL"]),
             variants: [
                 {
                     title: "S / Charcoal",
@@ -970,10 +1031,7 @@ export default async function migration_25022026_initial_seed({
             collection_id: getCollectionId("core-essentials"),
             thumbnail: getFirstImage(ribbedLongSleeveImages),
             images: getAllImages(ribbedLongSleeveImages).map((url) => ({ url })),
-            options: [
-                { title: "Color", values: ["Sand", "Charcoal"] },
-                { title: "Size", values: ["S", "M", "L", "XL"] },
-            ],
+            options: buildOptions(["Sand", "Charcoal"], ["S", "M", "L", "XL"]),
             variants: [
                 {
                     title: "S / Sand",
@@ -1089,10 +1147,7 @@ export default async function migration_25022026_initial_seed({
             collection_id: getCollectionId("core-essentials"),
             thumbnail: getFirstImage(minimalTeeImages),
             images: getAllImages(minimalTeeImages).map((url) => ({ url })),
-            options: [
-                { title: "Size", values: ["S", "M", "L", "XL"] },
-                { title: "Color", values: ["White", "Olive", "Black"] },
-            ],
+            options: buildOptions(["White", "Olive", "Black"], ["S", "M", "L", "XL"]),
             variants: [
                 {
                     title: "S / White",
@@ -1256,10 +1311,7 @@ export default async function migration_25022026_initial_seed({
             images: getAllImages(lightweightTrainingShortImages).map((url) => ({
                 url,
             })),
-            options: [
-                { title: "Color", values: ["Black", "Grey"] },
-                { title: "Size", values: ["S", "M", "L", "XL"] },
-            ],
+            options: buildOptions(["Black", "Grey"], ["S", "M", "L", "XL"]),
             variants: [
                 {
                     title: "S / Black",
@@ -1373,10 +1425,7 @@ export default async function migration_25022026_initial_seed({
             collection_id: getCollectionId("studio-training"),
             thumbnail: getFirstImage(ribbedSportsBraImages),
             images: getAllImages(ribbedSportsBraImages).map((url) => ({ url })),
-            options: [
-                { title: "Size", values: ["S", "M", "L", "XL"] },
-                { title: "Color", values: ["Sand", "Olive"] },
-            ],
+            options: buildOptions(["Sand", "Olive"], ["S", "M", "L", "XL"]),
             variants: [
                 {
                     title: "S / Sand",
@@ -1492,10 +1541,7 @@ export default async function migration_25022026_initial_seed({
             collection_id: getCollectionId("studio-training"),
             thumbnail: getFirstImage(performanceLeggingImages),
             images: getAllImages(performanceLeggingImages).map((url) => ({ url })),
-            options: [
-                { title: "Color", values: ["Charcoal", "Olive"] },
-                { title: "Size", values: ["S", "M", "L", "XL"] },
-            ],
+            options: buildOptions(["Charcoal", "Olive"], ["S", "M", "L", "XL"]),
             variants: [
                 {
                     title: "S / Charcoal",
@@ -1608,10 +1654,7 @@ export default async function migration_25022026_initial_seed({
             collection_id: getCollectionId("studio-training"),
             thumbnail: getFirstImage(studioZipJacketImages),
             images: getAllImages(studioZipJacketImages).map((url) => ({ url })),
-            options: [
-                { title: "Color", values: ["Black", "Olive"] },
-                { title: "Size", values: ["S", "M", "L", "XL"] },
-            ],
+            options: buildOptions(["Black", "Olive"], ["S", "M", "L", "XL"]),
             variants: [
                 {
                     title: "S / Black",
@@ -1725,10 +1768,7 @@ export default async function migration_25022026_initial_seed({
             collection_id: getCollectionId("outer-layers"),
             thumbnail: getFirstImage(movementWindbreakerImages),
             images: getAllImages(movementWindbreakerImages).map((url) => ({ url })),
-            options: [
-                { title: "Size", values: ["S", "M", "L", "XL"] },
-                { title: "Color", values: ["Sand", "Olive"] },
-            ],
+            options: buildOptions(["Sand", "Olive"], ["S", "M", "L", "XL"]),
             variants: [
                 {
                     title: "S / Sand",
@@ -1841,10 +1881,7 @@ export default async function migration_25022026_initial_seed({
             collection_id: getCollectionId("outer-layers"),
             thumbnail: getFirstImage(travelHoodieImages),
             images: getAllImages(travelHoodieImages).map((url) => ({ url })),
-            options: [
-                { title: "Size", values: ["S", "M", "L", "XL"] },
-                { title: "Color", values: ["Off-White"] },
-            ],
+            options: buildOptions(["Off-White"], ["S", "M", "L", "XL"]),
             variants: [
                 {
                     title: "S / Off-White",
@@ -1910,10 +1947,7 @@ export default async function migration_25022026_initial_seed({
             collection_id: getCollectionId("outer-layers"),
             thumbnail: getFirstImage(quiltedRecoveryVestImages),
             images: getAllImages(quiltedRecoveryVestImages).map((url) => ({ url })),
-            options: [
-                { title: "Color", values: ["Charcoal"] },
-                { title: "Size", values: ["S", "M", "L", "XL"] },
-            ],
+            options: buildOptions(["Charcoal"], ["S", "M", "L", "XL"]),
             variants: [
                 {
                     title: "S / Charcoal",
@@ -1979,10 +2013,7 @@ export default async function migration_25022026_initial_seed({
             collection_id: getCollectionId("outer-layers"),
             thumbnail: getFirstImage(warmUpOvershirtImages),
             images: getAllImages(warmUpOvershirtImages).map((url) => ({ url })),
-            options: [
-                { title: "Size", values: ["S", "M", "L", "XL"] },
-                { title: "Color", values: ["Olive"] },
-            ],
+            options: buildOptions(["Olive"], ["S", "M", "L", "XL"]),
             variants: [
                 {
                     title: "S / Olive",
@@ -2043,7 +2074,8 @@ export default async function migration_25022026_initial_seed({
 
     if (newProducts.length > 0) {
         logger.info("Seeding products...");
-        // Create products (without variantImageMap in the workflow input)
+
+        // Strip variantImageMap (used only post-creation to assign images)
         const productsForWorkflow = newProducts.map(
             ({ variantImageMap, ...product }) => product
         );
@@ -2092,7 +2124,9 @@ export default async function migration_25022026_initial_seed({
                 const colorMatch = variantTitle.match(/\/ ([A-Za-z-]+)$/);
                 const color = colorMatch ? colorMatch[1] : variantTitle;
 
-                const variantUrls = variantImageMap[color];
+                const variantUrls = (
+                    variantImageMap as Record<string, string[]>
+                )[color];
 
                 if (variantUrls && variantUrls.length > 0) {
                     const imageIds = variantUrls
