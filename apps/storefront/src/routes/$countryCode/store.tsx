@@ -4,11 +4,25 @@ import Store from "@/pages/store"
 import { listProducts, getBestSellingProductIds } from "@/lib/data/products"
 import { HttpTypes } from "@medusajs/types"
 import { sanitize } from "@/lib/utils/sanitize"
+import {
+  OPTION_VALUE_QUERY_KEY,
+  parseOptionValueIds,
+} from "@/lib/utils/option-values"
 
 export const Route = createFileRoute("/$countryCode/store")({
-  loader: async ({ params, context }) => {
+  validateSearch: (search): { [OPTION_VALUE_QUERY_KEY]?: string[] } => {
+    const ids = parseOptionValueIds(
+      search as Record<string, string | string[] | undefined>
+    )
+    return ids.length > 0 ? { [OPTION_VALUE_QUERY_KEY]: ids } : {}
+  },
+  loaderDeps: ({ search }) => ({
+    optionValueIds: search[OPTION_VALUE_QUERY_KEY] ?? [],
+  }),
+  loader: async ({ params, context, deps }) => {
     const { countryCode } = params
     const { queryClient } = context
+    const { optionValueIds } = deps
 
     const region = await queryClient.ensureQueryData({
       queryKey: ["region", countryCode],
@@ -20,13 +34,14 @@ export const Route = createFileRoute("/$countryCode/store")({
     }
 
     const { products } = await queryClient.ensureQueryData({
-      queryKey: ["products", { region_id: region.id }],
+      queryKey: ["products", { region_id: region.id }, optionValueIds],
       queryFn: () => listProducts({
         query_params: {
           limit: 100, // Reduce limit for SSR performance
           order: "-created_at"
         },
         region_id: region.id,
+        optionValueIds,
       }),
     })
 
@@ -38,6 +53,7 @@ export const Route = createFileRoute("/$countryCode/store")({
       region,
       products: products as HttpTypes.StoreProduct[],
       bestSellingIds,
+      optionValueIds,
     })
   },
   head: ({ loaderData }) => {

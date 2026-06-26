@@ -53,10 +53,12 @@ export const listProducts = async ({
   page_param = 1,
   query_params,
   region_id,
+  optionValueIds,
 }: {
   page_param?: number;
   query_params?: HttpTypes.StoreProductListParams;
   region_id?: string;
+  optionValueIds?: string[];
 }): Promise<{
   products: HttpTypes.StoreProduct[];
   count: number;
@@ -66,12 +68,29 @@ export const listProducts = async ({
   const _page_param = Math.max(page_param, 1)
   const offset = _page_param === 1 ? 0 : (_page_param - 1) * limit
 
+  const dedupedOptionValueIds = optionValueIds
+    ? Array.from(new Set(optionValueIds.filter(Boolean)))
+    : undefined
+
+  // Ensure variant options are always returned so global option-value
+  // filtering / display works on the client.
+  const baseFields = query_params?.fields
+  const fields = baseFields
+    ? baseFields.includes("*variants.options")
+      ? baseFields
+      : `${baseFields}, *variants.options`
+    : undefined
+
   const response = await sdk.store.product.list({
     limit,
     offset,
     region_id,
     ...query_params,
-  })
+    ...(fields ? { fields } : {}),
+    ...(dedupedOptionValueIds && dedupedOptionValueIds.length > 0
+      ? { option_value_id: dedupedOptionValueIds }
+      : {}),
+  } as HttpTypes.StoreProductListParams)
 
   const next_page = offset + limit < response.count ? _page_param + 1 : null
 
