@@ -12,6 +12,15 @@ importers:
 
   .:
     devDependencies:
+      '@medusajs/eslint-plugin':
+        specifier: 2.16.0
+        version: 2.16.0(eslint@9.33.0(jiti@2.6.1))(typescript@5.8.3)
+      eslint:
+        specifier: ^9.33.0
+        version: 9.33.0(jiti@2.6.1)
+      jiti:
+        specifier: ^2.4.2
+        version: 2.6.1
       prettier:
         specifier: ^3.2.5
         version: 3.6.2
@@ -2036,6 +2045,13 @@ packages:
     resolution: {integrity: sha512-lOlgs7pkh6DLHuGST69hggaYTg+h9k63qkhw+255OzkjQmzRoC0S5mMhXVh9u/lZmcpqH+p2VoZMuY3op3YJxg==}
     engines: {node: '>=18.0.0'}
     hasBin: true
+
+  '@medusajs/eslint-plugin@2.16.0':
+    resolution: {integrity: sha512-VBknFF/B6SM4lq5EAJoduYj0M6dkg6qK+JN8cRYELkQZAg8y3nUGvLsh+GxI8X9OQFjHeoPsfvzASVLsfnnwzg==}
+    engines: {node: '>=20.0.0'}
+    peerDependencies:
+      eslint: ^8.57.0 || ^9.0.0
+      typescript: '>=4.8.0'
 
   '@medusajs/event-bus-local@2.17.1':
     resolution: {integrity: sha512-Q9ihrmN5f58RrdFQUw4cTHkgFzHw2cklE1iRsGROuTA9yoIVFyAKN3p3ChTDl2vzJbI0MwwFJBwZa/Wn8J0oYA==}
@@ -12432,6 +12448,16 @@ snapshots:
       - supports-color
       - typescript
       - utf-8-validate
+
+  '@medusajs/eslint-plugin@2.16.0(eslint@9.33.0(jiti@2.6.1))(typescript@5.8.3)':
+    dependencies:
+      '@typescript-eslint/parser': 8.39.1(eslint@9.33.0(jiti@2.6.1))(typescript@5.8.3)
+      '@typescript-eslint/utils': 8.39.1(eslint@9.33.0(jiti@2.6.1))(typescript@5.8.3)
+      cron-parser: 4.9.0
+      eslint: 9.33.0(jiti@2.6.1)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - supports-color
 
   '@medusajs/event-bus-local@2.17.1(@medusajs/framework@2.17.1(@medusajs/cli@2.17.1(@types/node@20.0.0))(@types/node@20.0.0)(ioredis@5.8.2)(vite@5.2.11(@types/node@20.0.0)(lightningcss@1.30.2)(terser@5.44.0))(zod@4.2.0))':
     dependencies:
