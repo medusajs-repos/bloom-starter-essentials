@@ -25,29 +25,29 @@
     "email:dev": "email-preview --dir ./src/email-templates --port 9004 --hostname 0.0.0.0"
   },
   "dependencies": {
-    "@medusajs/admin-sdk": "2.18.0",
-    "@medusajs/admin-shared": "2.18.0",
-    "@medusajs/cli": "2.18.0",
-    "@medusajs/dashboard": "2.18.0",
-    "@medusajs/draft-order": "2.18.0",
+    "@medusajs/admin-sdk": "2.19.0",
+    "@medusajs/admin-shared": "2.19.0",
+    "@medusajs/cli": "2.19.0",
+    "@medusajs/dashboard": "2.19.0",
+    "@medusajs/draft-order": "2.19.0",
     "@medusajs/email-preview-server": "^0.0.10",
-    "@medusajs/framework": "2.18.0",
-    "@medusajs/icons": "^2.18.0",
-    "@medusajs/js-sdk": "2.18.0",
-    "@medusajs/medusa": "2.18.0",
-    "@medusajs/types": "2.18.0",
-    "@medusajs/ui": "4.2.0",
+    "@medusajs/framework": "2.19.0",
+    "@medusajs/icons": "^2.19.0",
+    "@medusajs/js-sdk": "2.19.0",
+    "@medusajs/medusa": "2.19.0",
+    "@medusajs/types": "2.19.0",
+    "@medusajs/ui": "4.2.1",
     "@react-email/components": "^1.0.9",
     "@react-email/render": "^2.0.4",
     "@tanstack/react-query": "5.64.2",
-    "react-router-dom": "6.30.4"
+    "react-router-dom": "7.18.2"
   },
   "devDependencies": {
-    "@medusajs/test-utils": "2.18.0",
+    "@medusajs/test-utils": "2.19.0",
     "@swc/core": "1.5.7",
     "@swc/jest": "^0.2.36",
     "@types/jest": "29.5.13",
-    "@types/node": "20.0.0",
+    "@types/node": "^20.19.0",
     "@types/react": "19.1.1",
     "@types/react-dom": "19.1.1",
     "jest": "29.7.0",
@@ -56,10 +56,10 @@
     "react-dom": "19.1.1",
     "ts-node": "10.9.2",
     "typescript": "5.8.3",
-    "vite": "5.2.11",
+    "vite": "7.3.6",
     "yalc": "1.0.0-pre.53"
   },
   "engines": {
-    "node": ">=20"
+    "node": "^20.19.0 || >=22.12.0"
   }
 }
