@@ -1,13 +1,6 @@
 import { ProductSearch } from "@/components/search/product-search"
 import { useLoaderData } from "@tanstack/react-router"
 
-/**
- * Store Page (All Products)
- *
- * The whole list is search-backed — there is no second product fetch on this
- * page. With no category pinned, the grid covers the entire published
- * catalogue.
- */
 const Store = () => {
   const loaderData = useLoaderData({ from: "/$countryCode/store" })
   const countryCode = loaderData?.countryCode ?? "us"

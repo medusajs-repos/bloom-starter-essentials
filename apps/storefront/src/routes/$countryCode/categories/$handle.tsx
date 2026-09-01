@@ -6,12 +6,6 @@ import { HttpTypes } from "@medusajs/types"
 import { sanitize } from "@/lib/utils/sanitize"
 
 export const Route = createFileRoute("/$countryCode/categories/$handle")({
-  /**
-   * Passed through untouched. The product list on this page comes from
-   * InstantSearch, whose `routing` writes its own refinement, sort and page
-   * params into the URL — stripping unknown keys here would wipe them out on
-   * the next router navigation.
-   */
   validateSearch: (search: Record<string, unknown>) => search,
   loader: async ({ params, context }) => {
     const { countryCode, handle } = params

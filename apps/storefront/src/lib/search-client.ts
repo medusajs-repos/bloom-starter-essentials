@@ -9,18 +9,8 @@ import { sdk } from "@/lib/utils/sdk"
 
 export const PRODUCT_INDEX_NAME = "product"
 
-// Carries a surface's pinned filters from `Configure` to `transformQuery`, as
-// `{ field: values }`. Not an Algolia param — InstantSearch passes unknown ones
-// through untouched, on every query it builds.
-// A pin can't go through `Configure`'s `facetFilters`: algoliasearch-helper
-// deep-merges that array element-wise with the one built from the refinement
-// widgets, so one ticked filter collapses both into a single OR group and the
-// pin is lost. `transformQuery` runs after that, and `mergeFiltersAnd` is a
-// real AND.
 export const PINNED_FILTERS_PARAM = "medusaPinnedFilters"
 
-// Fields a surface may pin itself to. Each must be `filterable()` on the index;
-// a pin goes through the query's filters, never through a facet.
 export type PinnedFilters = Partial<Record<"category", string[]>>
 
 export const { searchClient } = createInstantSearchAdapter({
@@ -32,9 +22,6 @@ export const { searchClient } = createInstantSearchAdapter({
       count: "exact",
     },
   },
-  // ANDs a surface's pinned filters onto whatever the customer refined. `$in`
-  // is the same operator a refinement list produces, so a scoped page and its
-  // sidebar speak to the engine in one voice.
   transformQuery: (query, request) => {
     const params = parseSearchParams(request.params) as Record<string, unknown>
     const pinned = params[PINNED_FILTERS_PARAM] as PinnedFilters | undefined

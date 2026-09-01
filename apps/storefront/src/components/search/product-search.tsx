@@ -22,26 +22,9 @@ import { Configure, InstantSearch } from "react-instantsearch"
 
 type ProductSearchProps = {
   countryCode: string
-  /**
-   * What this surface is scoped to, ANDed onto every search. A category page
-   * pins `category`; the store page pins nothing.
-   *
-   * When `category` is pinned, its filter is dropped from the sidebar — the
-   * page is already that filter, and offering it again only invites the
-   * customer to "narrow" to what they are looking at.
-   */
   pinnedFilters?: PinnedFilters
 }
 
-/**
- * A search-backed product grid: filters, sort and paging, all from one
- * `InstantSearch` provider over the shared client.
- *
- * Every refinement reaches the search query — nothing is filtered or sorted in
- * the browser — so the grid never holds results the customer has excluded. The
- * client's `placeholderSearch` default is what lets this work without a query
- * box: an empty query matches the whole catalogue.
- */
 export const ProductSearch = ({
   countryCode,
   pinnedFilters,
@@ -53,26 +36,10 @@ export const ProductSearch = ({
   const hasPinnedCategory = Boolean(pinnedFilters?.category?.length)
   const router = useRouter()
 
-  /**
-   * InstantSearch's default router writes the URL with a bare
-   * `window.history.pushState`. TanStack Router patches `pushState`, so it sees
-   * that as a fresh navigation — and with the router's `scrollRestoration`
-   * enabled, a fresh navigation resets the scroll to the top of the page.
-   *
-   * Refinements and sorting mostly hide that, since the controls sit at the top
-   * anyway. "Load more" does not: its button is at the bottom of the list, and
-   * jumping to the top is the opposite of what the customer asked for.
-   *
-   * Writing through the router instead, with `resetScroll` off, keeps the URL
-   * in sync without the jump. Memoized because a new router object on every
-   * render would tear down and re-create InstantSearch's URL sync.
-   */
   const routing = useMemo(
     () => ({
       router: historyRouter({
         push(url: string) {
-          // InstantSearch always builds an absolute URL; TanStack wants an
-          // in-app href, or it treats the navigation as external.
           const { pathname, search, hash } = new URL(url, window.location.href)
 
           router.navigate({
@@ -86,24 +53,16 @@ export const ProductSearch = ({
   )
 
   return (
-    /**
-     * InstantSearch's `history` router reads `window.location`, and throws
-     * outright when there is no `window`. The whole experience is therefore
-     * client-only; the server renders the placeholder below instead.
-     */
     <ClientOnly
       fallback={<div className="py-12 text-neutral-600">Loading products...</div>}
     >
       <InstantSearch
         indexName={PRODUCT_INDEX_NAME}
         searchClient={searchClient as unknown as SearchClient}
-        // Puts the filters, the sort and the page in the URL, so a refined list
-        // can be shared and survives a reload.
         routing={routing}
         future={{ preserveSharedStateOnUnmount: true }}
       >
         <Configure
-          // Matches the `limit: 12` the storefront's other product lists use.
           hitsPerPage={PRODUCTS_PER_PAGE}
           {...(hasPin ? { [PINNED_FILTERS_PARAM]: pinnedFilters } : undefined)}
         />

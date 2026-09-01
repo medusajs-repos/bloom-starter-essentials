@@ -3,24 +3,12 @@ import { HttpTypes } from "@medusajs/types"
 import { useLoaderData } from "@tanstack/react-router"
 import { useMemo } from "react"
 
-/**
- * Category Page
- *
- * The same search-backed grid the store page uses, scoped to this category.
- * Nothing is fetched alongside it — the list has one source.
- */
 const Category = () => {
   const loaderData = useLoaderData({
     from: "/$countryCode/categories/$handle",
   })
   const { category, countryCode } = loaderData || {}
-
-  /**
-   * The category's own name plus its children's, because a product indexed
-   * under a child category does not carry its parent's name. Matching the
-   * previous behaviour, which listed a category's products together with its
-   * subcategories'.
-   */
+  
   const pinnedCategories = useMemo(() => {
     const names = [
       category?.name,
