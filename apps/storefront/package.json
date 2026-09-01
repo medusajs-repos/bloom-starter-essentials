@@ -9,8 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@medusajs/icons": "2.19.0",
-    "@medusajs/js-sdk": "2.19.0",
+    "@medusajs/icons": "2.20.0-snapshot-20260828124434",
+    "@medusajs/instantsearch-adapter": "2.20.0-snapshot-20260828124434",
+    "@medusajs/js-sdk": "2.20.0-snapshot-20260828124434",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-navigation-menu": "^1.2.14",
@@ -23,9 +24,11 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "17.2.1",
+    "instantsearch.js": "4.113.0",
     "lodash-es": "4.17.21",
     "react": "19.1.1",
     "react-dom": "19.1.1",
+    "react-instantsearch": "^7.47.0",
     "tailwindcss": "4.1.12",
     "tailwindcss-animate": "^1.0.7",
     "vite-tsconfig-paths": "5.1.4"
@@ -33,7 +36,7 @@
   "devDependencies": {
     "@eslint/js": "9.33.0",
     "@medusajs-ai/tags": "next",
-    "@medusajs/types": "2.19.0",
+    "@medusajs/types": "2.20.0-snapshot-20260828124434",
     "@tailwindcss/vite": "4.1.4",
     "@tanstack/react-router-devtools": "^1.144.0",
     "@types/lodash-es": "4.17.12",
