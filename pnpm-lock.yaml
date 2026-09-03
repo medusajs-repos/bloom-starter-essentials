@@ -13,8 +13,8 @@ importers:
   .:
     devDependencies:
       '@medusajs/eslint-plugin':
-        specifier: 2.19.0
-        version: 2.19.0(eslint@9.33.0(jiti@2.6.1))(typescript@5.8.3)
+        specifier: 2.20.1
+        version: 2.20.1(eslint@9.33.0(jiti@2.6.1))(typescript@5.8.3)
       eslint:
         specifier: ^9.33.0
         version: 9.33.0(jiti@2.6.1)
@@ -1929,8 +1929,8 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  '@medusajs/eslint-plugin@2.19.0':
-    resolution: {integrity: sha512-ZkL4SzZEfeToRELikHTamahnWaz+vW3MNfW05Av6Ky1q6RkezEnvPAhpjEpZK4oaUBXpgkgj8bxDyWgTm/VDSQ==}
+  '@medusajs/eslint-plugin@2.20.1':
+    resolution: {integrity: sha512-su4lpyOFtfS2bv2/G8/qLmV9112ugOtRy4DDO8BBcmfsezvlo0j4RSVyIXigY5SRUvZDSmVkm1pEongQ/GbGOg==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0
@@ -11943,7 +11943,7 @@ snapshots:
       log-symbols: 4.1.0
       module-punycode: punycode@2.3.1
       next: 16.0.11(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      next-safe-action: 8.0.11(next@16.0.11(@babel/core@7.29.7)(@opentelemetry/api@1.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      next-safe-action: 8.0.11(next@16.0.11(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       node-html-parser: 7.0.2
       ora: 5.4.1
       postcss: 8.5.6
@@ -11977,7 +11977,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@medusajs/eslint-plugin@2.19.0(eslint@9.33.0(jiti@2.6.1))(typescript@5.8.3)':
+  '@medusajs/eslint-plugin@2.20.1(eslint@9.33.0(jiti@2.6.1))(typescript@5.8.3)':
     dependencies:
       '@typescript-eslint/parser': 8.39.1(eslint@9.33.0(jiti@2.6.1))(typescript@5.8.3)
       '@typescript-eslint/utils': 8.39.1(eslint@9.33.0(jiti@2.6.1))(typescript@5.8.3)
@@ -19227,7 +19227,7 @@ snapshots:
 
   negotiator@0.6.4: {}
 
-  next-safe-action@8.0.11(next@16.0.11(@babel/core@7.29.7)(@opentelemetry/api@1.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  next-safe-action@8.0.11(next@16.0.11(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       next: 16.0.11(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react: 19.1.1
