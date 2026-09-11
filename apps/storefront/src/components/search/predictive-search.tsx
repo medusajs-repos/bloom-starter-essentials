@@ -18,7 +18,7 @@ export const PredictiveSearch = () => {
     query_params: {
       q: query,
       limit: 6,
-      fields: "id,title,handle,thumbnail,calculated_price",
+      fields: "id,title,handle,thumbnail,*variants.calculated_price",
     },
     region_id: region?.id,
   })
