@@ -1,12 +1,12 @@
 import { createFileRoute, notFound } from "@tanstack/react-router"
 import { retrieveCategory } from "@/lib/data/categories"
 import { getRegion } from "@/lib/data/regions"
-import { getBestSellingProductIds } from "@/lib/data/products"
 import Category from "@/pages/category"
 import { HttpTypes } from "@medusajs/types"
 import { sanitize } from "@/lib/utils/sanitize"
 
 export const Route = createFileRoute("/$countryCode/categories/$handle")({
+  validateSearch: (search: Record<string, unknown>) => search,
   loader: async ({ params, context }) => {
     const { countryCode, handle } = params
     const { queryClient } = context
@@ -33,14 +33,12 @@ export const Route = createFileRoute("/$countryCode/categories/$handle")({
       },
     })
 
-    // Fetch best-selling product IDs for sorting
-    const bestSellingIds = await getBestSellingProductIds()
-
+    // No products are loaded here: the grid is search-backed, and a second
+    // source for the same list would only disagree with it.
     return sanitize({
       countryCode,
       region,
       category: category as HttpTypes.StoreProductCategory,
-      bestSellingIds,
     })
   },
   head: ({ loaderData }) => {
