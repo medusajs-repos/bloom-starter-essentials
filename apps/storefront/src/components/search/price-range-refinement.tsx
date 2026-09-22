@@ -1,7 +1,7 @@
-import { PRODUCT_FACETS } from "@/lib/search-client"
+import { indexedCurrency, priceAttribute } from "@/lib/search-client"
 import { formatPrice } from "@/lib/utils/price"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { useInstantSearch, useRange } from "react-instantsearch"
+import { useRange } from "react-instantsearch"
 
 const toThumb = (
   bound: number | undefined,
@@ -39,17 +39,18 @@ const THUMB_CLASSES = [
   "[&::-moz-range-thumb]:cursor-pointer",
 ].join(" ")
 
-export const PriceRangeRefinement = () => {
-  const { start, range, refine, canRefine } = useRange({
-    attribute: PRODUCT_FACETS.minPrice,
-  })
-  const { results } = useInstantSearch()
+type PriceRangeRefinementProps = {
+  currencyCode: string
+}
 
-  // The index resolves every product's price in one reference currency, so the
-  // first hit's is the right one for every hit.
-  const currency =
-    (results?.hits?.[0] as { currency_code?: string } | undefined)
-      ?.currency_code || "usd"
+export const PriceRangeRefinement = ({
+  currencyCode,
+}: PriceRangeRefinementProps) => {
+  const { start, range, refine, canRefine } = useRange({
+    attribute: priceAttribute("min_price", currencyCode),
+  })
+
+  const currency = indexedCurrency(currencyCode)
 
   // Whole units keep the thumbs on sane stops; the facet's own bounds are
   // widened outwards so no product falls outside the track.

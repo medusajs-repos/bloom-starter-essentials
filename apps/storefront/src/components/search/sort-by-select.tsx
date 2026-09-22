@@ -1,11 +1,18 @@
-import { PRODUCT_SORT_OPTIONS } from "@/lib/search-client"
+import { getProductSortOptions } from "@/lib/search-client"
 import { ChevronDown } from "@medusajs/icons"
+import { useMemo } from "react"
 import { useSortBy } from "react-instantsearch"
 
-export const SortBySelect = () => {
-  const { currentRefinement, options, refine } = useSortBy({
-    items: PRODUCT_SORT_OPTIONS,
-  })
+type SortBySelectProps = {
+  currencyCode: string
+}
+
+export const SortBySelect = ({ currencyCode }: SortBySelectProps) => {
+  const items = useMemo(
+    () => getProductSortOptions(currencyCode),
+    [currencyCode]
+  )
+  const { currentRefinement, options, refine } = useSortBy({ items })
 
   return (
     <label className="relative flex items-center gap-x-2 text-sm">

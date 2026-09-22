@@ -22,11 +22,13 @@ import { Configure, InstantSearch } from "react-instantsearch"
 
 type ProductSearchProps = {
   countryCode: string
+  currencyCode: string
   pinnedFilters?: PinnedFilters
 }
 
 export const ProductSearch = ({
   countryCode,
+  currencyCode,
   pinnedFilters,
 }: ProductSearchProps) => {
   const hasPin = Boolean(
@@ -81,20 +83,23 @@ export const ProductSearch = ({
                 />
               )}
               <OptionValuesRefinement />
-              <PriceRangeRefinement />
-              <OnSaleToggle />
+              <PriceRangeRefinement currencyCode={currencyCode} />
+              <OnSaleToggle currencyCode={currencyCode} />
             </div>
           </aside>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-4 py-6 border-b border-neutral-200">
               <HitsCount />
-              <SortBySelect />
+              <SortBySelect currencyCode={currencyCode} />
             </div>
 
-            <AppliedRefinements />
+            <AppliedRefinements currencyCode={currencyCode} />
 
-            <ProductHitsGrid countryCode={countryCode} />
+            <ProductHitsGrid
+              countryCode={countryCode}
+              currencyCode={currencyCode}
+            />
           </div>
         </div>
       </InstantSearch>

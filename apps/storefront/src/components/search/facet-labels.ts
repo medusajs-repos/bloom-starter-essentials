@@ -3,8 +3,6 @@ import { PRODUCT_FACETS } from "@/lib/search-client"
 const FACET_TITLES: Record<string, string> = {
   [PRODUCT_FACETS.category]: "Category",
   [PRODUCT_FACETS.optionValues]: "Options",
-  [PRODUCT_FACETS.onSale]: "On sale",
-  [PRODUCT_FACETS.minPrice]: "Price",
 }
 
 export const splitOptionValue = (raw: string) => {
@@ -20,6 +18,15 @@ export const splitOptionValue = (raw: string) => {
 export const facetTitle = (attribute: string, value?: string) => {
   if (attribute === PRODUCT_FACETS.optionValues && value) {
     return splitOptionValue(value).option
+  }
+
+  // The price facets carry a currency suffix, e.g. `min_price_usd`.
+  if (attribute.startsWith("on_sale_")) {
+    return "On sale"
+  }
+
+  if (attribute.startsWith("min_price_")) {
+    return "Price"
   }
 
   return FACET_TITLES[attribute] ?? attribute

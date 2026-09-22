@@ -4,6 +4,7 @@ import { useLoaderData } from "@tanstack/react-router"
 const Store = () => {
   const loaderData = useLoaderData({ from: "/$countryCode/store" })
   const countryCode = loaderData?.countryCode ?? "us"
+  const currencyCode = loaderData?.region?.currency_code ?? "usd"
 
   return (
     <div className="content-container pt-32 pb-12">
@@ -13,7 +14,7 @@ const Store = () => {
         </h1>
       </div>
 
-      <ProductSearch countryCode={countryCode} />
+      <ProductSearch countryCode={countryCode} currencyCode={currencyCode} />
     </div>
   )
 }

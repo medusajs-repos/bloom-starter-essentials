@@ -8,9 +8,13 @@ import { useInfiniteHits, useInstantSearch } from "react-instantsearch"
 
 type ProductHitsGridProps = {
   countryCode: string
+  currencyCode: string
 }
 
-export const ProductHitsGrid = ({ countryCode }: ProductHitsGridProps) => {
+export const ProductHitsGrid = ({
+  countryCode,
+  currencyCode,
+}: ProductHitsGridProps) => {
   const { items, showMore, isLastPage, showPrevious, isFirstPage } =
     useInfiniteHits<ProductGridHit>()
   const { status, error } = useInstantSearch()
@@ -65,6 +69,7 @@ export const ProductHitsGrid = ({ countryCode }: ProductHitsGridProps) => {
             key={hit.objectID}
             hit={hit}
             countryCode={countryCode}
+            currencyCode={currencyCode}
           />
         ))}
       </div>

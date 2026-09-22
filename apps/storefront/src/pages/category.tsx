@@ -7,7 +7,7 @@ const Category = () => {
   const loaderData = useLoaderData({
     from: "/$countryCode/categories/$handle",
   })
-  const { category, countryCode } = loaderData || {}
+  const { category, countryCode, region } = loaderData || {}
   
   const pinnedCategories = useMemo(() => {
     const names = [
@@ -32,6 +32,7 @@ const Category = () => {
 
       <ProductSearch
         countryCode={countryCode ?? "us"}
+        currencyCode={region?.currency_code ?? "usd"}
         pinnedFilters={{ category: pinnedCategories }}
       />
     </div>
