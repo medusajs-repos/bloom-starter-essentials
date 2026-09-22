@@ -103,7 +103,7 @@ function toDocument(
 }
 
 /**
- * Only published products are indexed. A row that returns no document leaves
+ * A row that returns no document leaves
  * the index: the helpers turn it into a delete on `consume` and on the
  * catch-up pass.
  */
@@ -113,13 +113,12 @@ const source = {
     rows: ProductRow[],
     context: SearchTypes.SearchIngestionContext
   ) => {
-    const published = rows.filter((row) => row.status === "published")
     const pricing = await loadPricing(
-      published.map((row) => row.id),
+      rows.map((row) => row.id),
       context
     )
 
-    return published.map((row) => toDocument(row, pricing.get(row.id)))
+    return rows.map((row) => toDocument(row, pricing.get(row.id)))
   },
 }
 
