@@ -20,7 +20,7 @@
   },
   "packageManager": "pnpm@10.12.3",
   "engines": {
-    "node": ">=22.15.0"
+    "node": ">=22.22.0"
   },
   "pnpm": {
     "overrides": {
